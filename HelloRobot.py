@@ -2,29 +2,29 @@ import os
 import unittest
 import csv
 import numpy
-<<<<<<< HEAD
+
 import math
 from __main__ import vtk, qt, ctk, slicer
 #from slicer.ScriptedLoadableModule import *
 
-=======
+
 from __main__ import vtk, qt, ctk, slicer
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
 
 #
 # HelloRobot
 #
-<<<<<<< HEAD
+
 class HelloRobot():
 #class HelloRobot(ScriptedLoadableModule):
   def __init__(self, parent = None):
     #ScriptedLoadableModule.__init__(self, parent)
 
-=======
+
 
 class HelloRobot:
   def __init__(self, parent):
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     parent.title = "Hello Robot"
     parent.categories = ["IGT"]
     parent.dependencies = []
@@ -38,7 +38,7 @@ class HelloRobot:
 
 
 #
-<<<<<<< HEAD
+
 # HelloRobotWidget
 #
 class HelloRobotWidget():
@@ -47,12 +47,12 @@ class HelloRobotWidget():
   #def __init__(self, parent):
     #ScriptedLoadableModuleWidget.setup(self)
 
-=======
+
 # qHelloRobotWidget
 #
 class HelloRobotWidget:
   def __init__(self, parent = None):
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     self.tnode = None
     self.strHostname = None
     self.times0 = 0
@@ -72,7 +72,7 @@ class HelloRobotWidget:
       self.setup()
       self.parent.show()
     
-<<<<<<< HEAD
+
     self.logic = HelloRobotLogic(None)
 
   def setup(self):
@@ -124,7 +124,7 @@ class HelloRobotWidget:
     configFormLayout = qt.QFormLayout(configFormFrame)
     configLayout.addWidget(configFormFrame)
 
-=======
+
     self.logic = HelloRobotLogic()
 
   def setup(self):
@@ -133,30 +133,29 @@ class HelloRobotWidget:
     setCollapsibleButton.text = "Input"
     self.layout.addWidget(setCollapsibleButton)
 
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     gridLayout = qt.QGridLayout(setCollapsibleButton)
     gridLayout.setSpacing(10)
 
     labelHostname = qt.QLabel("Hostname: ")
     self.lineEditHostname = qt.QLineEdit()
-<<<<<<< HEAD
+
     self.lineEditHostname.setPlaceholderText("localhost")
     self.lineEditHostname.setFixedWidth(130)
     labelPort = qt.QLabel("Port Number: ")
     self.lineEditPort = qt.QLineEdit()
     self.lineEditPort.setPlaceholderText("18944")
     self.lineEditPort.setFixedWidth(130)
-=======
+
     labelPort = qt.QLabel("Port Number: ")
     self.lineEditPort = qt.QLineEdit()
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
 
     gridLayout.addWidget(labelHostname, 1, 0)
     gridLayout.addWidget(self.lineEditHostname, 1, 1)
     gridLayout.addWidget(labelPort, 1, 2)
     gridLayout.addWidget(self.lineEditPort, 1, 3)
 
-<<<<<<< HEAD
     configFormLayout.addRow(gridLayout)
 
 
@@ -186,7 +185,7 @@ class HelloRobotWidget:
     #
     # Collapsible button - Controller
     #
-=======
+
     # Collapsible button - Status
     statusCollapsibleButton = ctk.ctkCollapsibleButton()
     statusCollapsibleButton.text = "Display"
@@ -206,18 +205,15 @@ class HelloRobotWidget:
     statusGridLayout.addWidget(self.lineEditRegistTime, 1, 3)
 
     # Collapsible button - Controller
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
     controlCollapsibleButton = ctk.ctkCollapsibleButton()
     controlCollapsibleButton.text = "SNRMRRobot Controller"
     self.layout.addWidget(controlCollapsibleButton)
 
-<<<<<<< HEAD
     mainLayout = qt.QVBoxLayout(controlCollapsibleButton)
     controllerFormFrame = qt.QFrame()
     controllerFormLayout = qt.QFormLayout(controllerFormFrame)
     mainLayout.addWidget(controllerFormFrame)
 
-=======
     # Layout within the sample collapsible button
     mainLayout = qt.QVBoxLayout(controlCollapsibleButton)
 
@@ -225,7 +221,7 @@ class HelloRobotWidget:
     controllerFormLayout = qt.QFormLayout(controllerFormFrame)
     mainLayout.addWidget(controllerFormFrame)
    
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     self.buttonConnect = qt.QPushButton("Connect")
     self.buttonConnect.toolTip = "Make connection to the Robot Controller"
     self.buttonRegistration = qt.QPushButton("ZFrameTransform Registration")
@@ -236,17 +232,15 @@ class HelloRobotWidget:
     self.buttonDisconnect = qt.QPushButton("Disconnect")
     #self.buttonDisconnect.setEnabled(False)
     self.buttonReconnect = qt.QPushButton("Reconnect")
-<<<<<<< HEAD
+
     #self.buttonReconnect.setEnabled(False)
 
-=======
     self.buttonReconnect.setEnabled(False)
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
 
     controllerFormLayout.addWidget(self.buttonConnect)
     controllerFormLayout.addWidget(self.buttonRegistration)
     controllerFormLayout.addWidget(self.buttonSendTarget)
-<<<<<<< HEAD
+
     #controllerFormLayout.addWidget(self.buttonCurrent)
     controllerFormLayout.addWidget(self.buttonDisconnect)
     #controllerFormLayout.addWidget(self.buttonReconnect)
@@ -290,14 +284,14 @@ class HelloRobotWidget:
 
     #
     # input markup fiducials node
-=======
+
     controllerFormLayout.addWidget(self.buttonCurrent)
     controllerFormLayout.addWidget(self.buttonDisconnect)
     #controllerFormLayout.addWidget(self.buttonReconnect)
 
     #
     # input markup fiducial node
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     #
     self.targetFiducialsSelector = slicer.qMRMLNodeComboBox()
     self.targetFiducialsSelector.nodeTypes = (("vtkMRMLMarkupsFiducialNode"), "")
@@ -330,8 +324,7 @@ class HelloRobotWidget:
 
     self.onFiducialsSelected()
 
-<<<<<<< HEAD
-=======
+
     # connect of the buttons
     self.buttonConnect.connect('clicked(bool)', self.onButtonConnectClicked)
     self.buttonRegistration.connect('clicked(bool)', self.onButtonRegistrationClicked)
@@ -340,12 +333,11 @@ class HelloRobotWidget:
     self.buttonDisconnect.connect('clicked(bool)', self.onButtonDisconnectClicked)
     self.buttonReconnect.connect('clicked(bool)', self.onButtonReconnectClicked)
 
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     # Add vertical spacer
     self.layout.addStretch(1)
 
 
-<<<<<<< HEAD
     #
     # path list table
     #
@@ -366,8 +358,6 @@ class HelloRobotWidget:
     slicer.app.restart()
 
 
-=======
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
   def onButtonConnectClicked(self):
     if self.connectTag:  # check already has a connect node
       print "Olalalalala!!!"
@@ -413,10 +403,8 @@ class HelloRobotWidget:
     if self.chooseCell == True:
        confirmBox = qt.QMessageBox()
        confirmBox.setText(self.rowStr)
-<<<<<<< HEAD
-=======
+
        #confirmBox.setInformativeText(self.rowStr)
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
        confirmBox.setStandardButtons(qt.QMessageBox.Yes | qt.QMessageBox.Cancel)
        confirmBox.setDefaultButton(qt.QMessageBox.Yes)
        reply = confirmBox.exec_()
@@ -427,16 +415,14 @@ class HelloRobotWidget:
          self.targetCellNode.SetName("TARGETCell")
          self.targetCellNode.SetText(self.cellPos)
          slicer.mrmlScene.AddNode(self.targetCellNode)
-<<<<<<< HEAD
 
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
          self.connectNode.PushNode(self.targetCellNode)
 
-=======
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
          self.connectNode.PushNode(self.targetCellNode)
   
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
        elif reply == qt.QMessageBox.Cancel:
          pass
          
@@ -468,10 +454,7 @@ class HelloRobotWidget:
   def onButtonReconnectClicked(self):
     pass  # add function
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
   def activeEvent(self):
     print "into activeEvent"
     self.tempLinearNode = slicer.vtkMRMLLinearTransformNode()
@@ -569,12 +552,10 @@ class HelloRobotWidget:
     self.targetFiducialsNode.GetNthFiducialPosition(row, pos)
     (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
     self.cellPos = "%.3f, %.3f, %.3f" %(pos[0], pos[1], pos[2])
-<<<<<<< HEAD
+
 
     self.cellPosTarget = (pos[0], pos[1], pos[2])
 
-=======
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
     self.chooseCell = True
     
       
@@ -585,11 +566,8 @@ class HelloRobotWidget:
     if not self.targetFiducialsNode:
       self.table.clear()
       self.table.setHorizontalHeaderLabels(self.headers)
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     else:
       self.tableData = []
       nOfControlPoints = self.targetFiducialsNode.GetNumberOfFiducials()
@@ -613,13 +591,12 @@ class HelloRobotWidget:
           cellDepth = qt.QTableWidgetItem("(%.3f)" %depth)
         else:
           cellDepth = qt.QTableWidgetItem("(%.3f)" %depth)
-<<<<<<< HEAD
+
 
         cellPosition = qt.QTableWidgetItem(posStr)
-=======
+
           cellPosition = qt.QTableWidgetItem(posStr)
-      
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
         row = [cellLabel, cellIndex, cellDepth, cellPosition]
 
         self.table.setItem(i, 0, row[0])
@@ -633,7 +610,7 @@ class HelloRobotWidget:
     
     # show the table
     self.table.show()
-<<<<<<< HEAD
+
 
   def onTemplateConfigButton(self):
     path = self.templateConfigPathEdit.text
@@ -896,7 +873,6 @@ class HelloRobotLogic:
   def __init__(self):
     self.pathVectors = []
     self.pathOrigins = []
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
 
   def computeNearestPath(self, pos):
     p = numpy.array(pos)
@@ -921,11 +897,8 @@ class HelloRobotLogic:
     indexX = "--"
     indexY = "--"
     inRange = False
-<<<<<<< HEAD
 
-=======
-    
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
     if minIndex >= 0:
         indexX = self.templateIndex[minIndex][0]
         indexY = self.templateIndex[minIndex][1]
@@ -934,7 +907,7 @@ class HelloRobotLogic:
 
     return (indexX, indexY, minDepth, inRange)
 
-<<<<<<< HEAD
+
 # ----------------------------------------------------------------------------------------------------------------
   def generatePath(self, cellPos, intNumOfOptionalPath):
     pos = numpy.array(cellPos)
@@ -1210,5 +1183,4 @@ class HelloRobotLogic:
 
 
   #TODO: calculate the orientation of the needle insertion
-=======
->>>>>>> 9cd012fb52685168c6b859e8797804fcb3520bf0
+
