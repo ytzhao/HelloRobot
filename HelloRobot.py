@@ -2,28 +2,18 @@ import os
 import unittest
 import csv
 import numpy
-
 import math
 from __main__ import vtk, qt, ctk, slicer
 #from slicer.ScriptedLoadableModule import *
 
 
-from __main__ import vtk, qt, ctk, slicer
-
-
 #
 # HelloRobot
 #
-
 class HelloRobot():
 #class HelloRobot(ScriptedLoadableModule):
   def __init__(self, parent = None):
     #ScriptedLoadableModule.__init__(self, parent)
-
-
-
-class HelloRobot:
-  def __init__(self, parent):
 
     parent.title = "Hello Robot"
     parent.categories = ["IGT"]
@@ -38,7 +28,6 @@ class HelloRobot:
 
 
 #
-
 # HelloRobotWidget
 #
 class HelloRobotWidget():
@@ -46,12 +35,6 @@ class HelloRobotWidget():
   def __init__(self, parent = None):
   #def __init__(self, parent):
     #ScriptedLoadableModuleWidget.setup(self)
-
-
-# qHelloRobotWidget
-#
-class HelloRobotWidget:
-  def __init__(self, parent = None):
 
     self.tnode = None
     self.strHostname = None
@@ -72,7 +55,6 @@ class HelloRobotWidget:
       self.setup()
       self.parent.show()
     
-
     self.logic = HelloRobotLogic(None)
 
   def setup(self):
@@ -124,32 +106,17 @@ class HelloRobotWidget:
     configFormLayout = qt.QFormLayout(configFormFrame)
     configLayout.addWidget(configFormFrame)
 
-
-    self.logic = HelloRobotLogic()
-
-  def setup(self):
-    # Collapsible button - Settings
-    setCollapsibleButton = ctk.ctkCollapsibleButton()
-    setCollapsibleButton.text = "Input"
-    self.layout.addWidget(setCollapsibleButton)
-
-
     gridLayout = qt.QGridLayout(setCollapsibleButton)
     gridLayout.setSpacing(10)
 
     labelHostname = qt.QLabel("Hostname: ")
     self.lineEditHostname = qt.QLineEdit()
-
     self.lineEditHostname.setPlaceholderText("localhost")
     self.lineEditHostname.setFixedWidth(130)
     labelPort = qt.QLabel("Port Number: ")
     self.lineEditPort = qt.QLineEdit()
     self.lineEditPort.setPlaceholderText("18944")
     self.lineEditPort.setFixedWidth(130)
-
-    labelPort = qt.QLabel("Port Number: ")
-    self.lineEditPort = qt.QLineEdit()
-
 
     gridLayout.addWidget(labelHostname, 1, 0)
     gridLayout.addWidget(self.lineEditHostname, 1, 1)
@@ -185,26 +152,6 @@ class HelloRobotWidget:
     #
     # Collapsible button - Controller
     #
-
-    # Collapsible button - Status
-    statusCollapsibleButton = ctk.ctkCollapsibleButton()
-    statusCollapsibleButton.text = "Display"
-    self.layout.addWidget(statusCollapsibleButton)
-
-    statusGridLayout = qt.QGridLayout(statusCollapsibleButton)
-    statusGridLayout.setSpacing(10)
-
-    labelStatus = qt.QLabel("Status: ")
-    self.lineEditStatus = qt.QLineEdit()
-    labelRegistTime = qt.QLabel("Regist Time: ")
-    self.lineEditRegistTime = qt.QLineEdit()
-
-    statusGridLayout.addWidget(labelStatus, 1, 0)
-    statusGridLayout.addWidget(self.lineEditStatus, 1, 1)
-    statusGridLayout.addWidget(labelRegistTime, 1, 2)
-    statusGridLayout.addWidget(self.lineEditRegistTime, 1, 3)
-
-    # Collapsible button - Controller
     controlCollapsibleButton = ctk.ctkCollapsibleButton()
     controlCollapsibleButton.text = "SNRMRRobot Controller"
     self.layout.addWidget(controlCollapsibleButton)
@@ -213,14 +160,6 @@ class HelloRobotWidget:
     controllerFormFrame = qt.QFrame()
     controllerFormLayout = qt.QFormLayout(controllerFormFrame)
     mainLayout.addWidget(controllerFormFrame)
-
-    # Layout within the sample collapsible button
-    mainLayout = qt.QVBoxLayout(controlCollapsibleButton)
-
-    controllerFormFrame = qt.QFrame()
-    controllerFormLayout = qt.QFormLayout(controllerFormFrame)
-    mainLayout.addWidget(controllerFormFrame)
-   
 
     self.buttonConnect = qt.QPushButton("Connect")
     self.buttonConnect.toolTip = "Make connection to the Robot Controller"
@@ -232,15 +171,12 @@ class HelloRobotWidget:
     self.buttonDisconnect = qt.QPushButton("Disconnect")
     #self.buttonDisconnect.setEnabled(False)
     self.buttonReconnect = qt.QPushButton("Reconnect")
-
     #self.buttonReconnect.setEnabled(False)
 
-    self.buttonReconnect.setEnabled(False)
 
     controllerFormLayout.addWidget(self.buttonConnect)
     controllerFormLayout.addWidget(self.buttonRegistration)
     controllerFormLayout.addWidget(self.buttonSendTarget)
-
     #controllerFormLayout.addWidget(self.buttonCurrent)
     controllerFormLayout.addWidget(self.buttonDisconnect)
     #controllerFormLayout.addWidget(self.buttonReconnect)
@@ -284,14 +220,6 @@ class HelloRobotWidget:
 
     #
     # input markup fiducials node
-
-    controllerFormLayout.addWidget(self.buttonCurrent)
-    controllerFormLayout.addWidget(self.buttonDisconnect)
-    #controllerFormLayout.addWidget(self.buttonReconnect)
-
-    #
-    # input markup fiducial node
-
     #
     self.targetFiducialsSelector = slicer.qMRMLNodeComboBox()
     self.targetFiducialsSelector.nodeTypes = (("vtkMRMLMarkupsFiducialNode"), "")
@@ -323,16 +251,6 @@ class HelloRobotWidget:
     self.table.connect('cellClicked(int, int)', self.onTableSelected)
 
     self.onFiducialsSelected()
-
-
-    # connect of the buttons
-    self.buttonConnect.connect('clicked(bool)', self.onButtonConnectClicked)
-    self.buttonRegistration.connect('clicked(bool)', self.onButtonRegistrationClicked)
-    self.buttonSendTarget.connect('clicked(bool)', self.onButtonSendTargetClicked)
-    self.buttonCurrent.connect('clicked(bool)', self.onButtonCurrentClicked)
-    self.buttonDisconnect.connect('clicked(bool)', self.onButtonDisconnectClicked)
-    self.buttonReconnect.connect('clicked(bool)', self.onButtonReconnectClicked)
-
 
     # Add vertical spacer
     self.layout.addStretch(1)
@@ -403,8 +321,6 @@ class HelloRobotWidget:
     if self.chooseCell == True:
        confirmBox = qt.QMessageBox()
        confirmBox.setText(self.rowStr)
-
-       #confirmBox.setInformativeText(self.rowStr)
        confirmBox.setStandardButtons(qt.QMessageBox.Yes | qt.QMessageBox.Cancel)
        confirmBox.setDefaultButton(qt.QMessageBox.Yes)
        reply = confirmBox.exec_()
@@ -418,10 +334,6 @@ class HelloRobotWidget:
 
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
          self.connectNode.PushNode(self.targetCellNode)
-
-         self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
-         self.connectNode.PushNode(self.targetCellNode)
-  
 
        elif reply == qt.QMessageBox.Cancel:
          pass
@@ -553,7 +465,6 @@ class HelloRobotWidget:
     (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
     self.cellPos = "%.3f, %.3f, %.3f" %(pos[0], pos[1], pos[2])
 
-
     self.cellPosTarget = (pos[0], pos[1], pos[2])
 
     self.chooseCell = True
@@ -566,7 +477,6 @@ class HelloRobotWidget:
     if not self.targetFiducialsNode:
       self.table.clear()
       self.table.setHorizontalHeaderLabels(self.headers)
-
 
     else:
       self.tableData = []
@@ -592,11 +502,7 @@ class HelloRobotWidget:
         else:
           cellDepth = qt.QTableWidgetItem("(%.3f)" %depth)
 
-
         cellPosition = qt.QTableWidgetItem(posStr)
-
-          cellPosition = qt.QTableWidgetItem(posStr)
-
         row = [cellLabel, cellIndex, cellDepth, cellPosition]
 
         self.table.setItem(i, 0, row[0])
@@ -610,7 +516,6 @@ class HelloRobotWidget:
     
     # show the table
     self.table.show()
-
 
   def onTemplateConfigButton(self):
     path = self.templateConfigPathEdit.text
@@ -633,7 +538,6 @@ class HelloRobotWidget:
 
   def onShowOptionalPath(self):
     print "onShowOptionalPath()"
-    print "showOptionalCheckBox: ", self.showOptionalCheckBox.checked
     self.logic.setOptionalPathVisibility(self.showOptionalCheckBox.checked)
 
 
@@ -698,6 +602,7 @@ class HelloRobotLogic():
     self.pathOrigins = []  ## Origins of needle paths (after transformation by parent transform node)
     self.pathVectors = []  ## Normal vectors of needle paths (after transformation by parent transform node)
 
+    self.generateTag = False
 
 
   def loadTemplateConfigFile2(self, path):
@@ -728,12 +633,13 @@ class HelloRobotLogic():
 
     self.createTemplateModel()
     self.setTemplateVisibility(0)
+    #self.setNeedlePathVisibility(0)
     self.updateTemplateVectors()
 
-    self.setOptionalPathVisibility(0)
 
-
-#--------------------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------
+# junichi's code
+#
 
   def createTemplateModel(self):
     self.templatePathVectors = []
@@ -823,8 +729,12 @@ class HelloRobotLogic():
 
 
   def setOptionalPathVisibility(self, visibility):
+    print "setOptionalPathVisibility: ", visibility
+
     self.setModelVisibilityByID(self.optionalPathModelNodeID, visibility)
     self.setModelSliceIntersectionVisibilityByID(self.optionalPathModelNodeID, visibility)
+
+    self.visibilityOptionalPathTag = visibility
 
 
   def onTemplateTransformUpdated(self,caller,event):
@@ -863,16 +773,6 @@ class HelloRobotLogic():
       self.pathVectors.append(numpy.array([tvec[0]-offset[0], tvec[1]-offset[1], tvec[2]-offset[2]]))
       i = i + 1
 
-=======
- 
-   
-#
-# HelloRobotLogic
-#
-class HelloRobotLogic:
-  def __init__(self):
-    self.pathVectors = []
-    self.pathOrigins = []
 
   def computeNearestPath(self, pos):
     p = numpy.array(pos)
@@ -898,7 +798,6 @@ class HelloRobotLogic:
     indexY = "--"
     inRange = False
 
-
     if minIndex >= 0:
         indexX = self.templateIndex[minIndex][0]
         indexY = self.templateIndex[minIndex][1]
@@ -906,7 +805,6 @@ class HelloRobotLogic:
           inRange = True
 
     return (indexX, indexY, minDepth, inRange)
-
 
 # ----------------------------------------------------------------------------------------------------------------
   def generatePath(self, cellPos, intNumOfOptionalPath):
@@ -932,10 +830,7 @@ class HelloRobotLogic:
     holeInfoList = self.closestPath(pos, xDisSList, disList, self.pathOrigins)
     print "holeInfoList: ", holeInfoList
 
-
-    self.createOptionalPathModel(pos, holeInfoList)
-
-    self.closestHoles()
+    self.createOptionalPathModel(pos, holeInfoList, self.visibilityOptionalPathTag)
 
     return (pPoint, depthBase, holeInfoList)
 
@@ -1057,22 +952,26 @@ class HelloRobotLogic:
     self.templateRAS = templateRAS
     j = 0
 
-    #print "x_disS_list: ", x_disS_list
-    #print "len(x_disS_list): ", len(x_disS_list)
+    print "x_disS_list: ", x_disS_list
+    print "len(x_disS_list): ", len(x_disS_list)
 
     for optionalPath in x_disS_list:
+      print "optionalPath: ", optionalPath
       subList = []
       tempPath = [optionalPath]*lenDisList
+      #subList = [math.fabs(ideal - fact for ideal,fact in zip(tempPath, dis_list))]
 
       for i in range(lenDisList):
         closestTemp = math.fabs(tempPath[i] - dis_list[i])
         subList.append(closestTemp)
+        #i = i+1
 
       self.minLocationIndex = subList.index(min(subList))
       self.minLocationIndexList.append(self.minLocationIndex)  # size as the numberOfPath
 
       self.disReal = self.dis2Points(pos, self.pathOrigins[self.minLocationIndex])  # TODO: disReal should include orientation information & couldn't over max depth 150
 
+      #self.holeInfoList.append([self.templateIndex[self.minLocationIndex], self.pathOrigins[self.minLocationIndex], self.disReal, self.x_degree_list[j]])
       self.holeInfoList.append([self.templateIndex[self.minLocationIndex], round(self.disReal,3), round(self.x_degree_list[j],3), self.minLocationIndex])
       j = j+1
 
@@ -1125,12 +1024,8 @@ class HelloRobotLogic:
     pathModelNode.SetAndObservePolyData(pathModelAppend.GetOutput())
 
 
-  def createOptionalPathModel(self, pos, holeInfoList):
+  def createOptionalPathModel(self, pos, holeInfoList, visibility):
     pathListRAS = []
-    
-    if len(holeInfoList) == 1:
-      self.setOptionalPathVisibility(1)
-
 
     for i in range(len(holeInfoList)):
       pathListRAS.append(self.templateRAS[holeInfoList[i][3]])
@@ -1175,12 +1070,4 @@ class HelloRobotLogic:
       optModelNode.SetAndObservePolyData(optModelAppend.GetOutput())
 
 
-########################################################################################
-
-  def closestHoles(self):
-    baseHole = self.pathOrigins[self.holeInfoList[0][3]]
-    print "baseHole: ", baseHole
-
-
   #TODO: calculate the orientation of the needle insertion
-
