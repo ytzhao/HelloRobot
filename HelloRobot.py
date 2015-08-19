@@ -595,6 +595,7 @@ class HelloRobotLogic():
     self.templateModelNodeID = ''
     self.needlePathModelNodeID = ''
     self.optionalPathModelNodeID = ''
+    self.selectNeedleNodeID = ''
 
     self.templateMaxDepth = []
     self.templatePathOrigins = []  ## Origins of needle paths
@@ -633,14 +634,11 @@ class HelloRobotLogic():
 
     self.createTemplateModel()
     self.setTemplateVisibility(0)
-    #self.setNeedlePathVisibility(0)
     self.updateTemplateVectors()
+    self.setOptionalPathVisibility(0)
 
 
-# ----------------------------------------------------------------------------------------------------------------
-# junichi's code
-#
-
+#----------------------------------------------------------------------------------------------------------------
   def createTemplateModel(self):
     self.templatePathVectors = []
     self.templatePathOrigins = []
@@ -733,8 +731,6 @@ class HelloRobotLogic():
 
     self.setModelVisibilityByID(self.optionalPathModelNodeID, visibility)
     self.setModelSliceIntersectionVisibilityByID(self.optionalPathModelNodeID, visibility)
-
-    self.visibilityOptionalPathTag = visibility
 
 
   def onTemplateTransformUpdated(self,caller,event):
@@ -830,7 +826,7 @@ class HelloRobotLogic():
     holeInfoList = self.closestPath(pos, xDisSList, disList, self.pathOrigins)
     print "holeInfoList: ", holeInfoList
 
-    self.createOptionalPathModel(pos, holeInfoList, self.visibilityOptionalPathTag)
+    self.createOptionalPathModel(pos, holeInfoList, intNumOfOptionalPath)
 
     return (pPoint, depthBase, holeInfoList)
 
@@ -1024,7 +1020,59 @@ class HelloRobotLogic():
     pathModelNode.SetAndObservePolyData(pathModelAppend.GetOutput())
 
 
-  def createOptionalPathModel(self, pos, holeInfoList, visibility):
+
+    R = pointOnTemplateRAS[0]
+    A = pointOnTemplateRAS[1]
+    S = pointOnTemplateRAS[2]
+
+    matrix = vtk.vtkMatrix4x4()
+    matrix.Identity()
+    matrix.SetElement(0, 3, R)
+    matrix.SetElement(1, 3, A)
+    matrix.SetElement(2, 3, S)
+
+    selectNeedleNode = slicer.mrmlScene.GetNodeByID(self.selectNeedleNodeID)
+    if selectNeedleNode == None:
+      selectNeedleNode = slicer.vtkMRMLLinearTransformNode()
+      selectNeedleNode.SetName('SelectedNeedle')
+      slicer.mrmlScene.AddNode(selectNeedleNode)
+      self.selectNeedleNodeID = selectNeedleNode.GetID()
+
+    selectNeedleNode.SetAndObserveMatrixTransformToParent(matrix)
+
+    modelNodes = slicer.mrmlScene.GetNodesByClass("vtkMRMLModelNode")
+    for index in range(modelNodes.GetNumberOfItems()):
+      indexNode = modelNodes.GetItemAsObject(index)
+      if indexNode.GetTransformNodeID() == selectNeedleNode.GetID():
+        indexNode.SetDisplayVisibility(1)
+        self.selectNeedleModelNode = indexNode
+        print indexNode.GetID()
+
+    red = slicer.mrmlScene.GetNodeByID("vtkMRMLSliceNodeRed")
+    yellow = slicer.mrmlScene.GetNodeByID("vtkMRMLSliceNodeYellow")
+    green = slicer.mrmlScene.GetNodeByID("vtkMRMLSliceNodeGreen")
+
+    vrdLogic = slicer.modules.volumereslicedriver.logic()
+    redDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), red)
+    redMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_INPLANE, red)
+    yellowDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), yellow)
+    yellowMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_INPLANE90, yellow)
+    greenDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), green)
+    greenMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_TRANSVERSE, green)
+    vrdLogic.Modified()
+
+
+
+
+
+
+
+  def createOptionalPathModel(self, pos, holeInfoList, intNumOfOptionalPath):
+
+    if intNumOfOptionalPath == 1:
+      self.setOptionalPathVisibility(1)
+
+
     pathListRAS = []
 
     for i in range(len(holeInfoList)):
