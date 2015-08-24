@@ -1083,12 +1083,37 @@ class HelloRobotLogic():
     deltaA = pos[1] - A
     deltaS = pos[2] - S
 
+    pathVector = numpy.array([deltaR, deltaA, deltaS])
+    tR = numpy.array([1.0, 0, 0])
+
+    vectorA = numpy.cross(pathVector, tR)
+    vectorS = numpy.cross(pathVector, vectorA)
+
+
+    pathVectorNorm = numpy.linalg.norm(pathVector)
+    vectorANorm = numpy.linalg.norm(vectorA)
+    vectorSNorm = numpy.linalg.norm(vectorS)
 
     matrix = vtk.vtkMatrix4x4()
     matrix.Identity()
+
+    ## TODO: if pathVector is parallel to R
+    matrix.SetElement(0, 0, pathVector[0]/pathVectorNorm)
+    matrix.SetElement(1, 0, pathVector[1]/pathVectorNorm)
+    matrix.SetElement(2, 0, pathVector[2]/pathVectorNorm)
+
+    matrix.SetElement(0, 1, vectorA[0]/vectorANorm)
+    matrix.SetElement(1, 1, vectorA[1]/vectorANorm)
+    matrix.SetElement(2, 1, vectorA[2]/vectorANorm)
+
+    matrix.SetElement(0, 2, vectorS[0]/vectorSNorm)
+    matrix.SetElement(1, 2, vectorS[1]/vectorSNorm)
+    matrix.SetElement(2, 2, vectorS[2]/vectorSNorm)
+
     matrix.SetElement(0, 3, R)
     matrix.SetElement(1, 3, A)
     matrix.SetElement(2, 3, S)
+
 
     selectNeedleNode = slicer.mrmlScene.GetNodeByID(self.selectNeedleNodeID)
     if selectNeedleNode == None:
