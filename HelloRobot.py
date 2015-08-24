@@ -73,28 +73,6 @@ class HelloRobotWidget():
 
 
     #
-    # Collapsible button - Robot status
-    #
-    statusCollapsibleButton = ctk.ctkCollapsibleButton()
-    statusCollapsibleButton.text = "SNRMRRobot status"
-    self.layout.addWidget(statusCollapsibleButton)
-
-    statusGridLayout = qt.QGridLayout(statusCollapsibleButton)
-    statusGridLayout.setSpacing(10)
-
-    labelStatus = qt.QLabel("Connection status: ")
-    self.lineEditStatus = qt.QLineEdit()
-    self.lineEditStatus.setFixedWidth(130)
-    labelRegistTime = qt.QLabel("Registration Time: ")
-    self.lineEditRegistTime = qt.QLineEdit()
-    self.lineEditRegistTime.setFixedWidth(130)
-
-    statusGridLayout.addWidget(labelStatus, 1, 0)
-    statusGridLayout.addWidget(self.lineEditStatus, 1, 1)
-    statusGridLayout.addWidget(labelRegistTime, 1, 2)
-    statusGridLayout.addWidget(self.lineEditRegistTime, 1, 3)
-
-    #
     # Collapsible button - Configuration
     #
     setCollapsibleButton = ctk.ctkCollapsibleButton()
@@ -112,11 +90,11 @@ class HelloRobotWidget():
     labelHostname = qt.QLabel("Hostname: ")
     self.lineEditHostname = qt.QLineEdit()
     self.lineEditHostname.setPlaceholderText("localhost")
-    self.lineEditHostname.setFixedWidth(130)
+    self.lineEditHostname.setFixedWidth(100)
     labelPort = qt.QLabel("Port Number: ")
     self.lineEditPort = qt.QLineEdit()
     self.lineEditPort.setPlaceholderText("18944")
-    self.lineEditPort.setFixedWidth(130)
+    self.lineEditPort.setFixedWidth(100)
 
     gridLayout.addWidget(labelHostname, 1, 0)
     gridLayout.addWidget(self.lineEditHostname, 1, 1)
@@ -150,6 +128,37 @@ class HelloRobotWidget():
 
 
     #
+    # Collapsible button - Robot status
+    #
+    statusCollapsibleButton = ctk.ctkCollapsibleButton()
+    statusCollapsibleButton.text = "SNRMRRobot status"
+    self.layout.addWidget(statusCollapsibleButton)
+
+    statusLayout = qt.QHBoxLayout(statusCollapsibleButton)
+    statusFormFrame = qt.QFrame()
+    statusFormLayout = qt.QFormLayout(statusFormFrame)
+    statusLayout.addWidget(statusFormFrame)
+
+    statusGridLayout = qt.QGridLayout(statusCollapsibleButton)
+    statusGridLayout.setSpacing(10)
+
+    labelStatus = qt.QLabel("Connection status: ")
+    self.lineEditStatus = qt.QLineEdit()
+    self.lineEditStatus.setFixedWidth(100)
+    labelRegistTime = qt.QLabel("Registration Time: ")
+    self.lineEditRegistTime = qt.QLineEdit()
+    self.lineEditRegistTime.setFixedWidth(100)
+
+    statusGridLayout.addWidget(labelStatus, 1, 0)
+    statusGridLayout.addWidget(self.lineEditStatus, 1, 1)
+    statusGridLayout.addWidget(labelRegistTime, 1, 2)
+    statusGridLayout.addWidget(self.lineEditRegistTime, 1, 3)
+
+    statusFormLayout.addRow(statusGridLayout)
+
+
+
+    #
     # Collapsible button - Controller
     #
     controlCollapsibleButton = ctk.ctkCollapsibleButton()
@@ -161,30 +170,48 @@ class HelloRobotWidget():
     controllerFormLayout = qt.QFormLayout(controllerFormFrame)
     mainLayout.addWidget(controllerFormFrame)
 
+    controllerGridLayout = qt.QGridLayout(controlCollapsibleButton)
+    controllerGridLayout.setSpacing(10)
+
     self.buttonConnect = qt.QPushButton("Connect")
+    self.buttonConnect.setFixedSize(100, 50)
     self.buttonConnect.toolTip = "Make connection to the Robot Controller"
-    self.buttonRegistration = qt.QPushButton("ZFrameTransform Registration")
+    self.buttonRegistration = qt.QPushButton("Registration")
+    self.buttonRegistration.setFixedSize(100, 50)
     self.buttonSendTarget = qt.QPushButton("Send Target")
+    self.buttonSendTarget.setFixedSize(100, 50)
     #self.buttonSendTarget.setEnabled(False)
+    self.buttonGeneratePath = qt.QPushButton("Generate Path")
+    self.buttonGeneratePath.setFixedSize(100, 50)
     self.buttonCurrent = qt.QPushButton("Current")
     #self.buttonCurrent.setEnabled(False)
     self.buttonDisconnect = qt.QPushButton("Disconnect")
+    self.buttonDisconnect.setFixedSize(100, 50)
     #self.buttonDisconnect.setEnabled(False)
     self.buttonReconnect = qt.QPushButton("Reconnect")
     #self.buttonReconnect.setEnabled(False)
 
 
-    controllerFormLayout.addWidget(self.buttonConnect)
-    controllerFormLayout.addWidget(self.buttonRegistration)
-    controllerFormLayout.addWidget(self.buttonSendTarget)
-    #controllerFormLayout.addWidget(self.buttonCurrent)
-    controllerFormLayout.addWidget(self.buttonDisconnect)
-    #controllerFormLayout.addWidget(self.buttonReconnect)
+    #controllerFormLayout.addWidget(self.buttonConnect)
+    #controllerFormLayout.addWidget(self.buttonRegistration)
+    #controllerFormLayout.addWidget(self.buttonGeneratePath)
+    #controllerFormLayout.addWidget(self.buttonSendTarget)
+    ##controllerFormLayout.addWidget(self.buttonCurrent)
+    #controllerFormLayout.addWidget(self.buttonDisconnect)
+    ##controllerFormLayout.addWidget(self.buttonReconnect)
 
+    controllerGridLayout.addWidget(self.buttonConnect, 1, 0)
+    controllerGridLayout.addWidget(self.buttonRegistration, 1, 1)
+    controllerGridLayout.addWidget(self.buttonGeneratePath, 1, 2)
+    controllerGridLayout.addWidget(self.buttonSendTarget, 1, 3)
+    controllerGridLayout.addWidget(self.buttonDisconnect, 1, 4)
+
+    controllerFormLayout.addRow(controllerGridLayout)
 
     # connect of the buttons
     self.buttonConnect.connect('clicked(bool)', self.onButtonConnectClicked)
     self.buttonRegistration.connect('clicked(bool)', self.onButtonRegistrationClicked)
+    self.buttonGeneratePath.connect('clicked(bool)', self.onButtonGeneratePathClicked)
     self.buttonSendTarget.connect('clicked(bool)', self.onButtonSendTargetClicked)
     self.buttonCurrent.connect('clicked(bool)', self.onButtonCurrentClicked)
     self.buttonDisconnect.connect('clicked(bool)', self.onButtonDisconnectClicked)
@@ -194,13 +221,13 @@ class HelloRobotWidget():
     generatePathLayout = qt.QHBoxLayout()
     self.lineEditNumOfOptionalPath = qt.QLineEdit()
     self.lineEditNumOfOptionalPath.setText("1")
-    self.lineEditNumOfOptionalPath.setFixedWidth(50)
-    self.buttonGeneratePath = qt.QPushButton("Generate Path")
-    controllerFormLayout.addWidget(self.buttonGeneratePath)
-    self.buttonGeneratePath.connect('clicked(bool)', self.onButtonGeneratePathClicked)
+    self.lineEditNumOfOptionalPath.setFixedWidth(30)
+    #self.buttonGeneratePath = qt.QPushButton("Generate Path")
+    #controllerFormLayout.addWidget(self.buttonGeneratePath)
+    #self.buttonGeneratePath.connect('clicked(bool)', self.onButtonGeneratePathClicked)
 
     generatePathLayout.addWidget(self.lineEditNumOfOptionalPath)
-    generatePathLayout.addWidget(self.buttonGeneratePath)
+    #generatePathLayout.addWidget(self.buttonGeneratePath)
 
     controllerFormLayout.addRow("Number of Optional Path: ", generatePathLayout)
 
@@ -241,7 +268,6 @@ class HelloRobotWidget():
     self.table = qt.QTableWidget(1, 4)
     self.table.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
     self.table.setSelectionMode(qt.QAbstractItemView.SingleSelection)
-    
     self.headers = ["Name", "Hole", "Depth(mm)", "Position(RAS)"]
     self.table.setHorizontalHeaderLabels(self.headers)
     self.table.horizontalHeader().setStretchLastSection(True)
@@ -259,11 +285,11 @@ class HelloRobotWidget():
     #
     # path list table
     #
-    self.pathTable = qt.QTableWidget(1, 3)
+    self.pathTable = qt.QTableWidget(1, 4)
     self.pathTable.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
     self.pathTable.setSelectionMode(qt.QAbstractItemView.SingleSelection)
     self.pathTable.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Expanding)
-    self.headersPathTable = ["Hole", "Depth(mm)", "Degree"]
+    self.headersPathTable = ["Name", "Hole", "Depth(mm)", "Degree"]
     self.pathTable.setHorizontalHeaderLabels(self.headersPathTable)
     self.pathTable.horizontalHeader().setStretchLastSection(True)
 
@@ -280,7 +306,7 @@ class HelloRobotWidget():
     if self.connectTag:  # check already has a connect node
       print "Olalalalala!!!"
 
-    else:  # first time to creat the connect node
+    else:  # first time to create the connect node
       self.connectNode = slicer.vtkMRMLIGTLConnectorNode()
       self.connectNode.SetName('testConnectNode')
       slicer.mrmlScene.AddNode(self.connectNode)
@@ -332,8 +358,15 @@ class HelloRobotWidget():
          self.targetCellNode.SetText(self.cellPos)
          slicer.mrmlScene.AddNode(self.targetCellNode)
 
+         self.sendPathNode = slicer.vtkMRMLTextNode()
+         self.sendPathNode.SetName("SelectPath")
+         self.sendPathNode.SetText(str(self.sendPathInfo))
+
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
+         self.connectNode.RegisterOutgoingMRMLNode(self.sendPathNode)
+
          self.connectNode.PushNode(self.targetCellNode)
+         self.connectNode.PushNode(self.sendPathNode)
 
        elif reply == qt.QMessageBox.Cancel:
          pass
@@ -353,6 +386,7 @@ class HelloRobotWidget():
       elif replyAll == qt.QMessageBox.Cancel:
         pass
 
+
   def onButtonCurrentClicked(self):
     self.dataNodeCurrent = slicer.vtkMRMLLinearTransformNode()
     self.dataNodeCurrent.SetName("CURRENT22222")
@@ -361,6 +395,7 @@ class HelloRobotWidget():
   def onButtonDisconnectClicked(self):
     self.connectNode.Stop()
     self.lineEditStatus.setText("disconnect")
+    self.lineEditStatus.setStyleSheet("background-color: red")
     self.buttonReconnect.setEnabled(True)
     
   def onButtonReconnectClicked(self):
@@ -401,6 +436,7 @@ class HelloRobotWidget():
         elif node.IsA("vtkMRMLTextNode"):  # text node
           if node.GetName() == "feedStatus":
             self.lineEditStatus.setText(node.GetText())
+            self.lineEditStatus.setStyleSheet("background-color: green")
             self.connectNode.UnregisterIncomingMRMLNode(node)
 
           elif node.GetName() == "feedInfoRegistTime":
@@ -457,10 +493,10 @@ class HelloRobotWidget():
   def onTableSelected(self, row, column):
     print "onTableSelected(%d, %d)" %(row, column)
     self.rowNum = row+1
-    self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + " </strong></font>to the robot?"
+    #self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + "</strong></font>to the robot?"
     
     pos = [0.0, 0.0, 0.0]
-    label = self.targetFiducialsNode.GetNthFiducialLabel(row)
+    self.selectedTargetLabel = self.targetFiducialsNode.GetNthFiducialLabel(row)
     self.targetFiducialsNode.GetNthFiducialPosition(row, pos)
     (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
     self.cellPos = "%.3f, %.3f, %.3f" %(pos[0], pos[1], pos[2])
@@ -556,15 +592,17 @@ class HelloRobotWidget():
       print "nthPath: ", nthPath
       indexHole = nthPath[0]
 
+      cellLabel = qt.QTableWidgetItem(self.selectedTargetLabel)
       cellIndex = qt.QTableWidgetItem("(%s, %s)" %(indexHole[0], indexHole[1]))
       cellDepth = qt.QTableWidgetItem("(%.3f)" %nthPath[1])
       cellDegree = qt.QTableWidgetItem("(%.3f)" %nthPath[2])
 
-      row = [cellIndex, cellDepth, cellDegree]
+      row = [cellLabel, cellIndex, cellDepth, cellDegree]
 
       self.pathTable.setItem(i, 0, row[0])
       self.pathTable.setItem(i, 1, row[1])
       self.pathTable.setItem(i, 2, row[2])
+      self.pathTable.setItem(i, 3, row[3])
 
       self.pathTableData.append(row)
 
@@ -572,10 +610,17 @@ class HelloRobotWidget():
 
 
   def onPathTableSelected(self, row, column):
-    pathSelect = self.holeInfoList[row]
-    print "pathSelect: ", pathSelect
+    self.pathSelect = self.holeInfoList[row]
+    print "pathSelect: ", self.pathSelect
 
-    self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), pathSelect[3])
+    self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + ", (" + self.pathSelect[0][0] + ", " + self.pathSelect[0][1] + ") , Depth: " + str(self.pathSelect[1]) + " " + "</strong></font>to the robot?"
+
+    insertionPointRAS = self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), self.pathSelect[3])
+
+
+    self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.pathSelect[2])  #(hole, array(RAS), depth, degree)
+
+    print "self.sendPathInfo: ", self.sendPathInfo
 
 
 
@@ -994,7 +1039,7 @@ class HelloRobotLogic():
       self.needlePathModelNodeID = pathModelNode.GetID()
 
       dnode = slicer.vtkMRMLModelDisplayNode()
-      dnode.SetColor(1,0,0)
+      dnode.SetColor(0, 1, 1)
       slicer.mrmlScene.AddNode(dnode)
       pathModelNode.SetAndObserveDisplayNodeID(dnode.GetID())
 
@@ -1011,6 +1056,8 @@ class HelloRobotLogic():
     tempTubeFilter.CappingOn()
     tempTubeFilter.Update()
 
+    self.setModelSliceIntersectionVisibilityByID(self.needlePathModelNodeID, 1)
+
     if vtk.VTK_MAJOR_VERSION <= 5:
       pathModelAppend.AddInput(tempTubeFilter.GetOutput())
     else:
@@ -1020,10 +1067,22 @@ class HelloRobotLogic():
     pathModelNode.SetAndObservePolyData(pathModelAppend.GetOutput())
 
 
+    #
+    # Reslice along with the selected needle
+    #
+    ## TODO: orientation!
+
+    print "(target) pos: ", pos
+    print "pointOnTemplateRAS: ", pointOnTemplateRAS
 
     R = pointOnTemplateRAS[0]
     A = pointOnTemplateRAS[1]
     S = pointOnTemplateRAS[2]
+
+    deltaR = pos[0] - R
+    deltaA = pos[1] - A
+    deltaS = pos[2] - S
+
 
     matrix = vtk.vtkMatrix4x4()
     matrix.Identity()
@@ -1062,9 +1121,7 @@ class HelloRobotLogic():
     vrdLogic.Modified()
 
 
-
-
-
+    return pointOnTemplateRAS
 
 
   def createOptionalPathModel(self, pos, holeInfoList, intNumOfOptionalPath):
