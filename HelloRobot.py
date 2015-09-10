@@ -599,8 +599,10 @@ class HelloRobotWidget():
 
     for i in range(getNumberOfPath):
       nthPath = self.holeInfoList[i]
-      #print "nthPath: ", nthPath
-      #print "self.angleList[i]: ", self.angleList[i]
+
+      if nthPath[1] > 150.0:  # max depth = 150mm
+        nthPath[1] = Decimal('Infinity')
+
       indexHole = nthPath[0]
 
       cellLabel = qt.QTableWidgetItem(self.selectedTargetLabel)
@@ -954,26 +956,17 @@ class HelloRobotLogic():
       self.x_degree_list.append(0)
 
     else:
-      #x_disH_list = []
-      #x_disS_list = []
-      #self.x_degree_list = []
       gap = float(15)/(numOfPath-1)
 
-      #self.disVLimit = self.depthNeedleBase
-
       for x in numpy.arange(0, 15, gap):
-        #x_disH = round(math.tan((x*math.pi)/180)*self.disVLimit, 3)
-        #x_disS = round(float(self.disVLimit)/math.cos((x*math.pi)/180), 3)
-
         x_disH = math.tan((x*math.pi)/180)*self.disVLimit
         x_disS = float(self.disVLimit)/math.cos((x*math.pi)/180)
+
         x_disH_list.append(x_disH)
         x_disS_list.append(x_disS)
         self.x_degree_list.append(x)
 
       # the limitation -- 15 degree
-      #x_disH_15 = round(math.tan((15*math.pi)/180)*self.disVLimit, 3)
-      #x_disS_15 = round(float(self.disVLimit)/math.cos((15*math.pi)/180), 3)
       x_disH_15 = math.tan((15*math.pi)/180)*self.disVLimit
       x_disS_15 = float(self.disVLimit)/math.cos((15*math.pi)/180)
       x_disH_list.append(x_disH_15)
@@ -1027,7 +1020,7 @@ class HelloRobotLogic():
 
       self.disReal = self.dis2Points(pos, self.pathOrigins[self.minLocationIndex])  # TODO: disReal should include orientation information & couldn't over max depth 150
 
-      #self.holeInfoList.append([self.templateIndex[self.minLocationIndex], self.pathOrigins[self.minLocationIndex], self.disReal, self.x_degree_list[j]])
+
       self.holeInfoList.append([self.templateIndex[self.minLocationIndex], round(self.disReal,3), round(self.x_degree_list[j],3), self.minLocationIndex])
       j = j+1
 
@@ -1214,11 +1207,9 @@ class HelloRobotLogic():
   def hideOptionalPath(self):
     slicer.mrmlScene.RemoveNode(self.optModelNode)
     slicer.mrmlScene.RemoveNode(self.dnodeOpt)
-    
+
     slicer.mrmlScene.RemoveNode(self.pathModelNode)
     slicer.mrmlScene.RemoveNode(self.dnodeSelectedPath)
-
-
 
 
   def determineAngle(self, depthBase, holeInfoList):
@@ -1228,7 +1219,6 @@ class HelloRobotLogic():
       disSlop = item[1]
       alpha_radians = math.asin(float(depthBase/disSlop))
       alpha_degree = round(90-(180*alpha_radians/math.pi),3)
-
       if alpha_degree > 15.0:
         alpha_degree = Decimal('Infinity')
 
