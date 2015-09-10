@@ -3,6 +3,7 @@ import unittest
 import csv
 import numpy
 import math
+from decimal import *
 from __main__ import vtk, qt, ctk, slicer
 #from slicer.ScriptedLoadableModule import *
 
@@ -18,12 +19,13 @@ class HelloRobot():
     parent.title = "Hello Robot"
     parent.categories = ["IGT"]
     parent.dependencies = []
-    parent.contributors = [""] # replace with "Firstname Lastname (Org)"
+    parent.contributors = ["Yuting Zhao, INPT-ENSEEIHT"] # replace with "Firstname Lastname (Org)"
     parent.helpText = """
-    Example
+    This module is to establish the communication connection with the Smart Template Robot device produced by Physical Sciences Inc. and Surgical Planning Laboratory at Brigham and Women's Hospital. This module aslo determines the angulated needle path.
     """
     parent.acknowledgementText = """
-    File""" # replace with organization, grant and thanks.
+    This module was developed by Yuting Zhao(INPT-ENSEEIHT, yuting.zhao@etu.enseeiht.fr). The research is funded by NIH(R41CA192446)
+    """ # replace with organization, grant and thanks.
     self.parent = parent
 
 
@@ -56,6 +58,7 @@ class HelloRobotWidget():
       self.parent.show()
     
     self.logic = HelloRobotLogic(None)
+    self.generateTag = False
 
   def setup(self):
     #
@@ -471,7 +474,7 @@ class HelloRobotWidget():
         #print node.GetClassName() 
         #print node.GetName()
         #print node.IsA('vtkMRMLLinearTransformNode')  # True
-        #print "!!!!!!!!!!!!!!!!!!!"
+
 
   def onFiducialsSelected(self):
     # Remove observer if previous node exists
@@ -485,9 +488,14 @@ class HelloRobotWidget():
     
     self.updateTable()
 
+
+
   def onFiducialsUpdated(self, caller, event):
     if caller.IsA("vtkMRMLMarkupsFiducialNode") and event == "ModifiedEvent":
       self.updateTable()
+
+    if self.generateTag:
+      self.logic.hideOptionalPath()
 
 
   def onTableSelected(self, row, column):
@@ -578,8 +586,10 @@ class HelloRobotWidget():
 
 
   def onButtonGeneratePathClicked(self):
+    self.generateTag = True
+
     intNumOfOptionalPath = int(self.lineEditNumOfOptionalPath.text)
-    (self.projectPoint, self.depthBase, self.holeInfoList) = self.logic.generatePath(self.cellPosTarget, intNumOfOptionalPath)
+    (self.projectPoint, self.depthBase, self.holeInfoList, self.angleList) = self.logic.generatePath(self.cellPosTarget, intNumOfOptionalPath)
     self.pathTableData = []
     getNumberOfPath = len(self.holeInfoList)
 
@@ -589,13 +599,16 @@ class HelloRobotWidget():
 
     for i in range(getNumberOfPath):
       nthPath = self.holeInfoList[i]
-      print "nthPath: ", nthPath
+
+      if nthPath[1] > 150.0:  # max depth = 150mm
+        nthPath[1] = Decimal('Infinity')
+
       indexHole = nthPath[0]
 
       cellLabel = qt.QTableWidgetItem(self.selectedTargetLabel)
       cellIndex = qt.QTableWidgetItem("(%s, %s)" %(indexHole[0], indexHole[1]))
       cellDepth = qt.QTableWidgetItem("(%.3f)" %nthPath[1])
-      cellDegree = qt.QTableWidgetItem("(%.3f)" %nthPath[2])
+      cellDegree = qt.QTableWidgetItem("(%.3f)" %self.angleList[i])
 
       row = [cellLabel, cellIndex, cellDepth, cellDegree]
 
@@ -613,17 +626,18 @@ class HelloRobotWidget():
     self.pathSelect = self.holeInfoList[row]
     print "pathSelect: ", self.pathSelect
 
-    self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + ", (" + self.pathSelect[0][0] + ", " + self.pathSelect[0][1] + ") , Depth: " + str(self.pathSelect[1]) + " " + "</strong></font>to the robot?"
+    if self.angleList[row] > 15.0:
+      self.rowStr = "Out of range, please choose another needle! :)"
+
+    else:
+      self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + ", (" + self.pathSelect[0][0] + ", " + self.pathSelect[0][1] + ") , Depth: " + str(self.pathSelect[1]) + " " + "Angle: " + str(self.angleList[row]) + " " + "</strong></font>to the robot?"
+
 
     insertionPointRAS = self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), self.pathSelect[3])
 
-
-    self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.pathSelect[2])  #(hole, array(RAS), depth, degree)
+    self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])  #(hole, array(RAS), depth, degree)
 
     print "self.sendPathInfo: ", self.sendPathInfo
-
-
-
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -847,6 +861,7 @@ class HelloRobotLogic():
 
     return (indexX, indexY, minDepth, inRange)
 
+
 # ----------------------------------------------------------------------------------------------------------------
   def generatePath(self, cellPos, intNumOfOptionalPath):
     pos = numpy.array(cellPos)
@@ -869,11 +884,13 @@ class HelloRobotLogic():
     disList = self.disPoint2Holes(pos, self.pathOrigins)
 
     holeInfoList = self.closestPath(pos, xDisSList, disList, self.pathOrigins)
-    print "holeInfoList: ", holeInfoList
+    print "holeInfoList: ", holeInfoList  #[[['F', ' "-3"'], 61.482, 0.0, 79]]
+
+    angleList = self.determineAngle(depthBase, holeInfoList)
 
     self.createOptionalPathModel(pos, holeInfoList, intNumOfOptionalPath)
 
-    return (pPoint, depthBase, holeInfoList)
+    return (pPoint, depthBase, holeInfoList, angleList)
 
 
   def determineTemplatePlane(self, point1, point2, point3):
@@ -939,26 +956,17 @@ class HelloRobotLogic():
       self.x_degree_list.append(0)
 
     else:
-      #x_disH_list = []
-      #x_disS_list = []
-      #self.x_degree_list = []
       gap = float(15)/(numOfPath-1)
 
-      #self.disVLimit = self.depthNeedleBase
-
       for x in numpy.arange(0, 15, gap):
-        #x_disH = round(math.tan((x*math.pi)/180)*self.disVLimit, 3)
-        #x_disS = round(float(self.disVLimit)/math.cos((x*math.pi)/180), 3)
-
         x_disH = math.tan((x*math.pi)/180)*self.disVLimit
         x_disS = float(self.disVLimit)/math.cos((x*math.pi)/180)
+
         x_disH_list.append(x_disH)
         x_disS_list.append(x_disS)
         self.x_degree_list.append(x)
 
       # the limitation -- 15 degree
-      #x_disH_15 = round(math.tan((15*math.pi)/180)*self.disVLimit, 3)
-      #x_disS_15 = round(float(self.disVLimit)/math.cos((15*math.pi)/180), 3)
       x_disH_15 = math.tan((15*math.pi)/180)*self.disVLimit
       x_disS_15 = float(self.disVLimit)/math.cos((15*math.pi)/180)
       x_disH_list.append(x_disH_15)
@@ -1012,7 +1020,7 @@ class HelloRobotLogic():
 
       self.disReal = self.dis2Points(pos, self.pathOrigins[self.minLocationIndex])  # TODO: disReal should include orientation information & couldn't over max depth 150
 
-      #self.holeInfoList.append([self.templateIndex[self.minLocationIndex], self.pathOrigins[self.minLocationIndex], self.disReal, self.x_degree_list[j]])
+
       self.holeInfoList.append([self.templateIndex[self.minLocationIndex], round(self.disReal,3), round(self.x_degree_list[j],3), self.minLocationIndex])
       j = j+1
 
@@ -1031,17 +1039,17 @@ class HelloRobotLogic():
     elif type(pointOnTemplateRAS) == int:
       pointOnTemplateRAS = self.templateRAS[pointOnTemplateRAS]
 
-    pathModelNode = slicer.mrmlScene.GetNodeByID(self.needlePathModelNodeID)
-    if pathModelNode == None:
-      pathModelNode = slicer.vtkMRMLModelNode()
-      pathModelNode.SetName('AngulatedNeedlePath')
-      slicer.mrmlScene.AddNode(pathModelNode)
-      self.needlePathModelNodeID = pathModelNode.GetID()
+    self.pathModelNode = slicer.mrmlScene.GetNodeByID(self.needlePathModelNodeID)
+    if self.pathModelNode == None:
+      self.pathModelNode = slicer.vtkMRMLModelNode()
+      self.pathModelNode.SetName('AngulatedNeedlePath')
+      slicer.mrmlScene.AddNode(self.pathModelNode)
+      self.needlePathModelNodeID = self.pathModelNode.GetID()
 
-      dnode = slicer.vtkMRMLModelDisplayNode()
-      dnode.SetColor(0, 1, 1)
-      slicer.mrmlScene.AddNode(dnode)
-      pathModelNode.SetAndObserveDisplayNodeID(dnode.GetID())
+      self.dnodeSelectedPath = slicer.vtkMRMLModelDisplayNode()
+      self.dnodeSelectedPath.SetColor(0, 1, 1)
+      slicer.mrmlScene.AddNode(self.dnodeSelectedPath)
+      self.pathModelNode.SetAndObserveDisplayNodeID(self.dnodeSelectedPath.GetID())
 
     pathModelAppend = vtk.vtkAppendPolyData()
 
@@ -1064,13 +1072,12 @@ class HelloRobotLogic():
       pathModelAppend.AddInputData(tempTubeFilter.GetOutput())
 
     pathModelAppend.Update()
-    pathModelNode.SetAndObservePolyData(pathModelAppend.GetOutput())
+    self.pathModelNode.SetAndObservePolyData(pathModelAppend.GetOutput())
 
 
     #
     # Reslice along with the selected needle
     #
-    ## TODO: orientation!
 
     print "(target) pos: ", pos
     print "pointOnTemplateRAS: ", pointOnTemplateRAS
@@ -1145,15 +1152,12 @@ class HelloRobotLogic():
     greenMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_TRANSVERSE, green)
     vrdLogic.Modified()
 
-
     return pointOnTemplateRAS
 
 
   def createOptionalPathModel(self, pos, holeInfoList, intNumOfOptionalPath):
-
     if intNumOfOptionalPath == 1:
       self.setOptionalPathVisibility(1)
-
 
     pathListRAS = []
 
@@ -1164,17 +1168,17 @@ class HelloRobotLogic():
 
     #(not generate path -> pass, otherwise go on)
 
-    optModelNode = slicer.mrmlScene.GetNodeByID(self.optionalPathModelNodeID)
-    if optModelNode == None:
-      optModelNode = slicer.vtkMRMLModelNode()
-      optModelNode.SetName('AllOptionalPaths')
-      slicer.mrmlScene.AddNode(optModelNode)
-      self.optionalPathModelNodeID = optModelNode.GetID()
+    self.optModelNode = slicer.mrmlScene.GetNodeByID(self.optionalPathModelNodeID)
+    if self.optModelNode == None:
+      self.optModelNode = slicer.vtkMRMLModelNode()
+      self.optModelNode.SetName('AllOptionalPaths')
+      slicer.mrmlScene.AddNode(self.optModelNode)
+      self.optionalPathModelNodeID = self.optModelNode.GetID()
 
-      dnode = slicer.vtkMRMLModelDisplayNode()
-      dnode.SetColor(0.96,0.92,0.56)
-      slicer.mrmlScene.AddNode(dnode)
-      optModelNode.SetAndObserveDisplayNodeID(dnode.GetID())
+      self.dnodeOpt = slicer.vtkMRMLModelDisplayNode()
+      self.dnodeOpt.SetColor(0.96,0.92,0.56)
+      slicer.mrmlScene.AddNode(self.dnodeOpt)
+      self.optModelNode.SetAndObserveDisplayNodeID(self.dnodeOpt.GetID())
 
     optModelAppend = vtk.vtkAppendPolyData()
 
@@ -1197,7 +1201,29 @@ class HelloRobotLogic():
         optModelAppend.AddInputData(optTubeFilter.GetOutput())
 
       optModelAppend.Update()
-      optModelNode.SetAndObservePolyData(optModelAppend.GetOutput())
+      self.optModelNode.SetAndObservePolyData(optModelAppend.GetOutput())
 
 
-  #TODO: calculate the orientation of the needle insertion
+  def hideOptionalPath(self):
+    slicer.mrmlScene.RemoveNode(self.optModelNode)
+    slicer.mrmlScene.RemoveNode(self.dnodeOpt)
+
+    slicer.mrmlScene.RemoveNode(self.pathModelNode)
+    slicer.mrmlScene.RemoveNode(self.dnodeSelectedPath)
+
+
+  def determineAngle(self, depthBase, holeInfoList):
+    alphaList = []
+
+    for item in holeInfoList:
+      disSlop = item[1]
+      alpha_radians = math.asin(float(depthBase/disSlop))
+      alpha_degree = round(90-(180*alpha_radians/math.pi),3)
+      if alpha_degree > 15.0:
+        alpha_degree = Decimal('Infinity')
+
+      alphaList.append(alpha_degree)
+
+    return alphaList
+
+
