@@ -438,7 +438,7 @@ class HelloRobotWidget():
         node = caller.GetIncomingMRMLNode(i)
 
         if node.IsA("vtkMRMLLinearTransformNode"):  # lineartransform node
-          if node.GetName() == "CURRENT":
+          if node.GetName() == "CURRENT":  # node name the same robot controller part
 
             if self.receiveCurrentNode == None:
               self.receiveCurrentNode = slicer.vtkMRMLLinearTransformNode()
@@ -453,6 +453,7 @@ class HelloRobotWidget():
 
               strCurrent = "(%.3f, %.3f, %.3f)" %(self.matR, self.matA, self.matS)
               self.lineEditCurrent.setText(strCurrent)
+              self.connectNode.UnregisterIncomingMRMLNode(node)
 
 
         elif node.IsA("vtkMRMLTextNode"):  # text node
