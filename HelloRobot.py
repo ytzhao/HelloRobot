@@ -111,10 +111,10 @@ class HelloRobotWidget():
     templateConfigPathLayout.setSpacing(10)
     self.templateConfigPathEdit = qt.QLineEdit()
     settings = qt.QSettings()
-    templateConfigPath = settings.value('HelloRobot/templateConfigFile')
-    if os.path.exists(templateConfigPath):
-      self.logic.loadTemplateConfigFile2(templateConfigPath)
-    self.templateConfigPathEdit.text = templateConfigPath
+    #templateConfigPath = settings.value('HelloRobot/templateConfigFile')
+    #if os.path.exists(templateConfigPath):
+    #  self.logic.loadTemplateConfigFile2(templateConfigPath)
+    #self.templateConfigPathEdit.text = templateConfigPath
     self.templateConfigPathEdit.readOnly = False
     self.templateConfigPathEdit.frame = True
     #self.templateConfigPathEdit.styleSheet = "QLineEdit { background:transparent; }"
@@ -176,20 +176,22 @@ class HelloRobotWidget():
     controllerGridLayout = qt.QGridLayout(controlCollapsibleButton)
     controllerGridLayout.setSpacing(10)
 
+    lengthButton = 160
+    heightButton = 65
     self.buttonConnect = qt.QPushButton("Connect")
-    self.buttonConnect.setFixedSize(100, 50)
+    self.buttonConnect.setFixedSize(lengthButton, heightButton)
     self.buttonConnect.toolTip = "Make connection to the Robot Controller"
     self.buttonRegistration = qt.QPushButton("Registration")
-    self.buttonRegistration.setFixedSize(100, 50)
-    self.buttonSendTarget = qt.QPushButton("Send Target")
-    self.buttonSendTarget.setFixedSize(100, 50)
+    self.buttonRegistration.setFixedSize(lengthButton, heightButton)
+    self.buttonSendTarget = qt.QPushButton("Send\n Target")
+    self.buttonSendTarget.setFixedSize(lengthButton, heightButton)
     #self.buttonSendTarget.setEnabled(False)
-    self.buttonGeneratePath = qt.QPushButton("Generate Path")
-    self.buttonGeneratePath.setFixedSize(100, 50)
+    self.buttonGeneratePath = qt.QPushButton("Generate\n Path")
+    self.buttonGeneratePath.setFixedSize(lengthButton, heightButton)
     self.buttonCurrent = qt.QPushButton("Current")
     #self.buttonCurrent.setEnabled(False)
     self.buttonDisconnect = qt.QPushButton("Disconnect")
-    self.buttonDisconnect.setFixedSize(100, 50)
+    self.buttonDisconnect.setFixedSize(lengthButton, heightButton)
     #self.buttonDisconnect.setEnabled(False)
     self.buttonReconnect = qt.QPushButton("Reconnect")
     #self.buttonReconnect.setEnabled(False)
