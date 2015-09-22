@@ -369,6 +369,7 @@ class HelloRobotWidget():
          self.sendPathNode = slicer.vtkMRMLTextNode()
          self.sendPathNode.SetName("SelectPath")
          self.sendPathNode.SetText(str(self.sendPathInfo))
+         slicer.mrmlScene.AddNode(self.sendPathNode)
 
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
          self.connectNode.RegisterOutgoingMRMLNode(self.sendPathNode)
@@ -531,7 +532,7 @@ class HelloRobotWidget():
 
     (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
 
-    self.cellPos = "(%.3f, %.3f, %.3f)" %(pos[0], pos[1], pos[2])
+    self.cellPos = "%.3f, %.3f, %.3f" %(pos[0], pos[1], pos[2])
     self.cellPosTarget = (pos[0], pos[1], pos[2])
     self.chooseCell = True
 
@@ -663,8 +664,9 @@ class HelloRobotWidget():
 
     insertionPointRAS = self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), self.pathSelect[3])
 
-    self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])  #(hole, array, depth, degree)
-
+    #self.sendPathInfo = (hole, array, depth, degree)
+    #self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])
+    self.sendPathInfo = (self.pathSelect[0][0], self.pathSelect[0][1], self.pathSelect[1], self.angleList[row])
 
     print "self.sendPathInfo: ", self.sendPathInfo  #(('F', ' "0"'), array([  0.,   0.,  30.]), 67.125, 0.886)
 
