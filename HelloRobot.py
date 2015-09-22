@@ -42,7 +42,7 @@ class HelloRobotWidget():
     self.strHostname = None
     self.times0 = 0
 
-    self.chooseCell = False    
+    self.chooseCell = False
     self.connectTag = False
     self.registTag = False
 
@@ -56,7 +56,7 @@ class HelloRobotWidget():
     if not parent:
       self.setup()
       self.parent.show()
-    
+
     self.logic = HelloRobotLogic(None)
     self.generateTag = False
 
@@ -151,11 +151,16 @@ class HelloRobotWidget():
     labelRegistTime = qt.QLabel("Registration Time: ")
     self.lineEditRegistTime = qt.QLineEdit()
     self.lineEditRegistTime.setFixedWidth(100)
+    labelCurrent = qt.QLabel("Current: ")
+    self.lineEditCurrent = qt.QLineEdit()
 
     statusGridLayout.addWidget(labelStatus, 1, 0)
     statusGridLayout.addWidget(self.lineEditStatus, 1, 1)
     statusGridLayout.addWidget(labelRegistTime, 1, 2)
     statusGridLayout.addWidget(self.lineEditRegistTime, 1, 3)
+    statusGridLayout.addWidget(labelCurrent, 2, 0)
+    statusGridLayout.addWidget(self.lineEditCurrent, 2, 1)
+
 
     statusFormLayout.addRow(statusGridLayout)
 
@@ -276,7 +281,7 @@ class HelloRobotWidget():
     self.headers = ["Name", "Hole", "Depth(mm)", "Position(RAS)"]
     self.table.setHorizontalHeaderLabels(self.headers)
     self.table.horizontalHeader().setStretchLastSection(True)
-    
+
     mainLayout.addWidget(self.table)
 
     self.table.connect('cellClicked(int, int)', self.onTableSelected)
@@ -290,11 +295,11 @@ class HelloRobotWidget():
     #
     # path list table
     #
-    self.pathTable = qt.QTableWidget(1, 4)
+    self.pathTable = qt.QTableWidget(1, 5)
     self.pathTable.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
     self.pathTable.setSelectionMode(qt.QAbstractItemView.SingleSelection)
     self.pathTable.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Expanding)
-    self.headersPathTable = ["Name", "Hole", "Depth(mm)", "Degree"]
+    self.headersPathTable = ["Name", "Hole", "Depth(mm)", "Degree", "RAS"]
     self.pathTable.setHorizontalHeaderLabels(self.headersPathTable)
     self.pathTable.horizontalHeader().setStretchLastSection(True)
 
@@ -332,7 +337,7 @@ class HelloRobotWidget():
         self.activeEvent()  # active the monitor
         self.buttonDisconnect.setEnabled(True)
         self.connectTag = True
-    
+
 
   def onButtonRegistrationClicked(self):
     if self.registTag:  # check already has a registration data node
@@ -366,6 +371,7 @@ class HelloRobotWidget():
          self.sendPathNode = slicer.vtkMRMLTextNode()
          self.sendPathNode.SetName("SelectPath")
          self.sendPathNode.SetText(str(self.sendPathInfo))
+         slicer.mrmlScene.AddNode(self.sendPathNode)
 
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
          self.connectNode.RegisterOutgoingMRMLNode(self.sendPathNode)
@@ -375,7 +381,7 @@ class HelloRobotWidget():
 
        elif reply == qt.QMessageBox.Cancel:
          pass
-         
+
     else:
       allTargetBox = qt.QMessageBox()
       allTargetBox.setText("Do you want to send <font color='red'><strong>all the target</strong></font> to the robot?")
@@ -402,7 +408,7 @@ class HelloRobotWidget():
     self.lineEditStatus.setText("disconnect")
     self.lineEditStatus.setStyleSheet("background-color: red")
     self.buttonReconnect.setEnabled(True)
-    
+
   def onButtonReconnectClicked(self):
     pass  # add function
 
@@ -411,14 +417,14 @@ class HelloRobotWidget():
     print "into activeEvent"
     self.tempLinearNode = slicer.vtkMRMLLinearTransformNode()
     self.tempLinearNode.SetName('temp')
-   
+
     #self.tagTemp = self.tempLinearNode.AddObserver('ModifiedEvent', self.putInfo)
     #self.tagTemp = self.connectNode.AddObserver('ModifiedEvent', self.putInfo)
     #self.tagTemp = self.connectNode.AddObserver(slicer.vtkMRMLIGTLConnectorNode.ReceiveEvent, self.putInfo)
     #self.tagTemp = self.tempLinearNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.putInfo)
     #self.tagTemp = self.tempLinearNode.AddObserver(self.connectNode.ReceiveEvent, self.putInfo)
     self.tagTemp = self.connectNode.AddObserver(self.connectNode.ReceiveEvent, self.putInfo)
-    
+
     #test
     self.times1 = 0
 
@@ -432,12 +438,27 @@ class HelloRobotWidget():
       nInNode =  caller.GetNumberOfIncomingMRMLNodes()
       #print nInNode
       for i in range(nInNode):  # start from 0
-        node = caller.GetIncomingMRMLNode(i) 
+        node = caller.GetIncomingMRMLNode(i)
 
-        if node.IsA("vtkMRMLLinearTransformNode"):  # lineartransform node              
-          if node.GetName() == "feedCurrent":
-			pass
-        
+        if node.IsA("vtkMRMLLinearTransformNode"):  # lineartransform node
+          if node.GetName() == "CURRENT":  # node name the same robot controller part
+
+            if self.receiveCurrentNode == None:
+              self.receiveCurrentNode = slicer.vtkMRMLLinearTransformNode()
+              self.receiveCurrentNode.SetName("receiveCurrent")
+              slicer.mrmlScene.AddNode(self.receiveCurrentNode)
+
+            else:
+              mat4x4 = self.receiveCurrentNode.GetMatrixTransformToParent()
+              self.matR = mat4x4.GetElement(0, 3)
+              self.matA = mat4x4.GetElement(1, 3)
+              self.matS = mat4x4.GetElement(2, 3)
+
+              strCurrent = "(%.3f, %.3f, %.3f)" %(self.matR, self.matA, self.matS)
+              self.lineEditCurrent.setText(strCurrent)
+              self.connectNode.UnregisterIncomingMRMLNode(node)
+
+
         elif node.IsA("vtkMRMLTextNode"):  # text node
           if node.GetName() == "feedStatus":
             self.lineEditStatus.setText(node.GetText())
@@ -459,21 +480,21 @@ class HelloRobotWidget():
               "Slicer Python", "Target Accepted!")
             self.connectNode.UnregisterIncomingMRMLNode(node)
             self.buttonCurrent.setEnabled(True)
-          
+
           elif node.GetName() == "feedTargetCell":
             print node.GetText()
             qt.QMessageBox.information(
               slicer.util.mainWindow(),
               "Slicer Python", "Cell Accepted!")
             self.connectNode.UnregisterIncomingMRMLNode(node)
-			
+
         else:  # else to node.IsA
           print "no feedBack!!!!!"
-          
+
         #print i  # start from 0
         #print node.GetID()  # MRML ID
         #print node.GetNodeTagName()  # MRML Type
-        #print node.GetClassName() 
+        #print node.GetClassName()
         #print node.GetName()
         #print node.IsA('vtkMRMLLinearTransformNode')  # True
 
@@ -482,12 +503,12 @@ class HelloRobotWidget():
     # Remove observer if previous node exists
     if self.targetFiducialsNode and self.tag:
       self.targetFiducialsNode.RemoveObserver(self.tag)
-    
+
     # Update selected node, add observer, and update control points
     if self.targetFiducialsSelector.currentNode():
       self.targetFiducialsNode = self.targetFiducialsSelector.currentNode()
       self.tag = self.targetFiducialsNode.AddObserver("ModifiedEvent", self.onFiducialsUpdated)
-    
+
     self.updateTable()
 
 
@@ -504,22 +525,24 @@ class HelloRobotWidget():
     print "onTableSelected(%d, %d)" %(row, column)
     self.rowNum = row+1
     #self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + "</strong></font>to the robot?"
-    
+
     pos = [0.0, 0.0, 0.0]
     self.selectedTargetLabel = self.targetFiducialsNode.GetNthFiducialLabel(row)
     self.targetFiducialsNode.GetNthFiducialPosition(row, pos)
+
+    print "!!!!!! onTableSelected: ", pos
+
     (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
+
     self.cellPos = "%.3f, %.3f, %.3f" %(pos[0], pos[1], pos[2])
-
     self.cellPosTarget = (pos[0], pos[1], pos[2])
-
     self.chooseCell = True
-    
-      
+
+
   def updateTable(self):
     self.times0 = self.times0 + 1
     print "updateTable: ", self.times0
-    
+
     if not self.targetFiducialsNode:
       self.table.clear()
       self.table.setHorizontalHeaderLabels(self.headers)
@@ -533,7 +556,7 @@ class HelloRobotWidget():
 
       for i in range(nOfControlPoints):
         label = self.targetFiducialsNode.GetNthFiducialLabel(i)
-      
+
         pos = [0.0, 0.0, 0.0]
         self.targetFiducialsNode.GetNthFiducialPosition(i, pos)
         (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
@@ -541,7 +564,7 @@ class HelloRobotWidget():
         posStr = "(%.3f, %.3f, %.3f)" %(pos[0], pos[1], pos[2])
         cellLabel = qt.QTableWidgetItem(label)
         cellIndex = qt.QTableWidgetItem("(%s, %s)" %(indexX, indexY))
-      
+
         cellDepth = None
         if inRange:
           cellDepth = qt.QTableWidgetItem("(%.3f)" %depth)
@@ -555,11 +578,11 @@ class HelloRobotWidget():
         self.table.setItem(i, 1, row[1])
         self.table.setItem(i, 2, row[2])
         self.table.setItem(i, 3, row[3])
-        
+
         self.tableData.append(row)
 
     # end the range
-    
+
     # show the table
     self.table.show()
 
@@ -612,12 +635,18 @@ class HelloRobotWidget():
       cellDepth = qt.QTableWidgetItem("(%.3f)" %nthPath[1])
       cellDegree = qt.QTableWidgetItem("(%.3f)" %self.angleList[i])
 
-      row = [cellLabel, cellIndex, cellDepth, cellDegree]
+
+      posRAS = "(%.3f, %.3f, %.3f)" %(round(self.cellPosTarget[0], 3), round(self.cellPosTarget[1], 3), round(self.cellPosTarget[2], 3))
+      RAS = qt.QTableWidgetItem(posRAS)
+
+      row = [cellLabel, cellIndex, cellDepth, cellDegree, RAS]
+
 
       self.pathTable.setItem(i, 0, row[0])
       self.pathTable.setItem(i, 1, row[1])
       self.pathTable.setItem(i, 2, row[2])
       self.pathTable.setItem(i, 3, row[3])
+      self.pathTable.setItem(i, 4, row[4])
 
       self.pathTableData.append(row)
 
@@ -637,9 +666,11 @@ class HelloRobotWidget():
 
     insertionPointRAS = self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), self.pathSelect[3])
 
-    self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])  #(hole, array(RAS), depth, degree)
+    #self.sendPathInfo = (hole, array, depth, degree)
+    #self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])
+    self.sendPathInfo = (self.pathSelect[0][0], self.pathSelect[0][1], self.pathSelect[1], self.angleList[row])
 
-    print "self.sendPathInfo: ", self.sendPathInfo
+    print "self.sendPathInfo: ", self.sendPathInfo  #(('F', ' "0"'), array([  0.,   0.,  30.]), 67.125, 0.886)
 
 
 # ----------------------------------------------------------------------------------------------------------------
@@ -1210,8 +1241,9 @@ class HelloRobotLogic():
     slicer.mrmlScene.RemoveNode(self.optModelNode)
     slicer.mrmlScene.RemoveNode(self.dnodeOpt)
 
-    slicer.mrmlScene.RemoveNode(self.pathModelNode)
-    slicer.mrmlScene.RemoveNode(self.dnodeSelectedPath)
+    if self.pathModelNode:
+      slicer.mrmlScene.RemoveNode(self.pathModelNode)
+      slicer.mrmlScene.RemoveNode(self.dnodeSelectedPath)
 
 
   def determineAngle(self, depthBase, holeInfoList):
