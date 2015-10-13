@@ -9,31 +9,31 @@ from __main__ import vtk, qt, ctk, slicer
 
 
 #
-# HelloRobot
+# SmartTemplate
 #
-class HelloRobot():
-#class HelloRobot(ScriptedLoadableModule):
+class SmartTemplate():
+#class SmartTemplate(ScriptedLoadableModule):
   def __init__(self, parent = None):
     #ScriptedLoadableModule.__init__(self, parent)
 
-    parent.title = "Hello Robot"
+    parent.title = "Smart Template"
     parent.categories = ["IGT"]
     parent.dependencies = []
-    parent.contributors = ["Yuting Zhao, INPT-ENSEEIHT"] # replace with "Firstname Lastname (Org)"
+    parent.contributors = ["Yuting Zhao, INP Toulouse-ENSEEIHT"] # replace with "Firstname Lastname (Org)"
     parent.helpText = """
     This module is to establish the communication connection with the Smart Template Robot device produced by Physical Sciences Inc. and Surgical Planning Laboratory at Brigham and Women's Hospital. This module aslo determines the angulated needle path.
     """
     parent.acknowledgementText = """
-    This module was developed by Yuting Zhao(INPT-ENSEEIHT, yuting.zhao@etu.enseeiht.fr). The research is funded by NIH(R41CA192446)
+    This module was developed by Yuting Zhao(INP Toulouse - ENSEEIHT, yuting.zhao@outlook.com). The research is funded by NIH(R41CA192446)
     """ # replace with organization, grant and thanks.
     self.parent = parent
 
 
 #
-# HelloRobotWidget
+# SmartTemplateWidget
 #
-class HelloRobotWidget():
-#class HelloRobotWidget(ScriptedLoadableModuleWidget):
+class SmartTemplateWidget():
+#class SmartTemplateWidget(ScriptedLoadableModuleWidget):
   def __init__(self, parent = None):
   #def __init__(self, parent):
     #ScriptedLoadableModuleWidget.setup(self)
@@ -46,6 +46,8 @@ class HelloRobotWidget():
     self.connectTag = False
     self.registTag = False
 
+    self.receiveCurrentNode = None
+
     if not parent:
       self.parent = slicer.qMRMLWidget()
       self.parent.setLayout(qt.QVBoxLayout())
@@ -57,8 +59,14 @@ class HelloRobotWidget():
       self.setup()
       self.parent.show()
 
-    self.logic = HelloRobotLogic(None)
+    self.logic = SmartTemplateLogic(None)
     self.generateTag = False
+
+    self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9, 'J':10, 'K':11, 'L':12, 'M':13, 'N':14}
+    self.colDict = {' "-7"':-7, ' "-6"':-6, ' "-5"':-5, ' "-4"':-4, ' "-3"':-3, ' "-2"':-2, ' "-1"':-1, ' "0"':0, ' "1"':1, ' "2"':2, ' "3"':3, ' "4"':4, ' "5"':5, ' "6"':6, ' "7"':7}
+
+    #self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9}
+    #self.colDict = {' "0"':1, ' "1"':2, ' "2"':3, ' "3"':4, ' "4"':5, ' "5"':6, ' "6"':7}
 
   def setup(self):
     #
@@ -93,11 +101,13 @@ class HelloRobotWidget():
     labelHostname = qt.QLabel("Hostname: ")
     self.lineEditHostname = qt.QLineEdit()
     self.lineEditHostname.setPlaceholderText("localhost")
-    self.lineEditHostname.setFixedWidth(100)
+    self.lineEditHostname.setText("localhost")
+    self.lineEditHostname.setFixedWidth(150)
     labelPort = qt.QLabel("Port Number: ")
     self.lineEditPort = qt.QLineEdit()
     self.lineEditPort.setPlaceholderText("18944")
-    self.lineEditPort.setFixedWidth(100)
+    self.lineEditPort.setText("10000")
+    self.lineEditPort.setFixedWidth(150)
 
     gridLayout.addWidget(labelHostname, 1, 0)
     gridLayout.addWidget(self.lineEditHostname, 1, 1)
@@ -110,14 +120,16 @@ class HelloRobotWidget():
     templateConfigPathLayout = qt.QHBoxLayout()
     templateConfigPathLayout.setSpacing(10)
     self.templateConfigPathEdit = qt.QLineEdit()
-    settings = qt.QSettings()
-    #templateConfigPath = settings.value('HelloRobot/templateConfigFile')
-    #if os.path.exists(templateConfigPath):
-    #  self.logic.loadTemplateConfigFile2(templateConfigPath)
-    #self.templateConfigPathEdit.text = templateConfigPath
-    self.templateConfigPathEdit.readOnly = False
+
+#    settings = qt.QSettings()
+#    templateConfigPath = settings.value("SmartTemplateModule/templateConfigFile")
+#    if os.path.exists(templateConfigPath):
+#      self.logic.loadTemplateConfigFile(templateConfigPath)
+#    self.templateConfigPathEdit.text = templateConfigPath
+#    self.templateConfigPathEdit.readOnly = False
+
     self.templateConfigPathEdit.frame = True
-    #self.templateConfigPathEdit.styleSheet = "QLineEdit { background:transparent; }"
+    self.templateConfigPathEdit.styleSheet = "QLineEdit { background:transparent; }"
     self.templateConfigPathEdit.cursor = qt.QCursor(qt.Qt.IBeamCursor)
     templateConfigPathLayout.addWidget(self.templateConfigPathEdit)
 
@@ -147,10 +159,10 @@ class HelloRobotWidget():
 
     labelStatus = qt.QLabel("Connection status: ")
     self.lineEditStatus = qt.QLineEdit()
-    self.lineEditStatus.setFixedWidth(100)
+    self.lineEditStatus.setFixedWidth(150)
     labelRegistTime = qt.QLabel("Registration Time: ")
     self.lineEditRegistTime = qt.QLineEdit()
-    self.lineEditRegistTime.setFixedWidth(100)
+    self.lineEditRegistTime.setFixedWidth(150)
     labelCurrent = qt.QLabel("Current: ")
     self.lineEditCurrent = qt.QLineEdit()
 
@@ -200,15 +212,6 @@ class HelloRobotWidget():
     #self.buttonDisconnect.setEnabled(False)
     self.buttonReconnect = qt.QPushButton("Reconnect")
     #self.buttonReconnect.setEnabled(False)
-
-
-    #controllerFormLayout.addWidget(self.buttonConnect)
-    #controllerFormLayout.addWidget(self.buttonRegistration)
-    #controllerFormLayout.addWidget(self.buttonGeneratePath)
-    #controllerFormLayout.addWidget(self.buttonSendTarget)
-    ##controllerFormLayout.addWidget(self.buttonCurrent)
-    #controllerFormLayout.addWidget(self.buttonDisconnect)
-    ##controllerFormLayout.addWidget(self.buttonReconnect)
 
     controllerGridLayout.addWidget(self.buttonConnect, 1, 0)
     controllerGridLayout.addWidget(self.buttonRegistration, 1, 1)
@@ -295,11 +298,11 @@ class HelloRobotWidget():
     #
     # path list table
     #
-    self.pathTable = qt.QTableWidget(1, 5)
+    self.pathTable = qt.QTableWidget(1, 4)
     self.pathTable.setSelectionBehavior(qt.QAbstractItemView.SelectRows)
     self.pathTable.setSelectionMode(qt.QAbstractItemView.SingleSelection)
     self.pathTable.setSizePolicy(qt.QSizePolicy.Expanding, qt.QSizePolicy.Expanding)
-    self.headersPathTable = ["Name", "Hole", "Depth(mm)", "Degree", "RAS"]
+    self.headersPathTable = ["Name", "Hole", "Depth(mm)", "Degree"]
     self.pathTable.setHorizontalHeaderLabels(self.headersPathTable)
     self.pathTable.horizontalHeader().setStretchLastSection(True)
 
@@ -354,6 +357,20 @@ class HelloRobotWidget():
 
 
   def onButtonSendTargetClicked(self):
+    #temp = self.cellPosTarget + self.sendPathInfoTarget + self.templateNum
+    #tempStr = "%.3f, %.3f, %.3f, %.3f, %.3f, %d, %d" %(temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6])
+
+#   targetRAS[3], templatePlane[3], holeRAS[3], depth, degree, (x, y)
+    R = self.sendPathInfo[1][0]
+    A = self.sendPathInfo[1][1]
+    S = self.sendPathInfo[1][2]
+    holeRAS = [R, A, S]
+    
+    temp = self.cellPosTarget + self.smartTemplatePlane3 + holeRAS + self.sendPathInfoTarget + self.templateNum
+
+    tempStr = "%.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %.3f, %d, %d" %(temp[0], temp[1], temp[2], temp[3], temp[4], temp[5], temp[6], temp[7], temp[8], temp[9], temp[10], temp[11], temp[12])
+
+    
     if self.chooseCell == True:
        confirmBox = qt.QMessageBox()
        confirmBox.setText(self.rowStr)
@@ -365,19 +382,20 @@ class HelloRobotWidget():
          print "TargetCellPos: ", self.cellPos
          self.targetCellNode = slicer.vtkMRMLTextNode()
          self.targetCellNode.SetName("TARGETCell")
-         self.targetCellNode.SetText(self.cellPos)
+#         self.targetCellNode.SetText(self.cellPos)
+         self.targetCellNode.SetText(tempStr)
          slicer.mrmlScene.AddNode(self.targetCellNode)
 
-         self.sendPathNode = slicer.vtkMRMLTextNode()
-         self.sendPathNode.SetName("SelectPath")
-         self.sendPathNode.SetText(str(self.sendPathInfo))
-         slicer.mrmlScene.AddNode(self.sendPathNode)
+#         self.sendPathNode = slicer.vtkMRMLTextNode()
+#         self.sendPathNode.SetName("SelectPath")
+#         self.sendPathNode.SetText(self.sendPathInfo)
+#         slicer.mrmlScene.AddNode(self.sendPathNode)
 
          self.connectNode.RegisterOutgoingMRMLNode(self.targetCellNode)
-         self.connectNode.RegisterOutgoingMRMLNode(self.sendPathNode)
+#         self.connectNode.RegisterOutgoingMRMLNode(self.sendPathNode)
 
          self.connectNode.PushNode(self.targetCellNode)
-         self.connectNode.PushNode(self.sendPathNode)
+#         self.connectNode.PushNode(self.sendPathNode)
 
        elif reply == qt.QMessageBox.Cancel:
          pass
@@ -405,7 +423,7 @@ class HelloRobotWidget():
 
   def onButtonDisconnectClicked(self):
     self.connectNode.Stop()
-    self.lineEditStatus.setText("disconnect")
+    self.lineEditStatus.setText("Disconnect")
     self.lineEditStatus.setStyleSheet("background-color: red")
     self.buttonReconnect.setEnabled(True)
 
@@ -434,9 +452,7 @@ class HelloRobotWidget():
     #print ("into caller", self.times1)
 
     if caller.IsA('vtkMRMLIGTLConnectorNode'):
-      #print "caller is connectNode!"
       nInNode =  caller.GetNumberOfIncomingMRMLNodes()
-      #print nInNode
       for i in range(nInNode):  # start from 0
         node = caller.GetIncomingMRMLNode(i)
 
@@ -530,13 +546,49 @@ class HelloRobotWidget():
     self.selectedTargetLabel = self.targetFiducialsNode.GetNthFiducialLabel(row)
     self.targetFiducialsNode.GetNthFiducialPosition(row, pos)
 
-    print "!!!!!! onTableSelected: ", pos
+    print "onTableSelected: ", pos
 
     (indexX, indexY, depth, inRange) = self.logic.computeNearestPath(pos)
 
     self.cellPos = "%.3f, %.3f, %.3f" %(pos[0], pos[1], pos[2])
-    self.cellPosTarget = (pos[0], pos[1], pos[2])
+    self.cellPosTarget = [pos[0], pos[1], pos[2]]
     self.chooseCell = True
+
+
+  def onPathTableSelected(self, row, column):
+    self.pathSelect = self.holeInfoList[row]
+    print "pathSelect: ", self.pathSelect
+
+    if self.angleList[row] > 15.0:
+      self.rowStr = "Out of range, please choose another needle! :)"
+
+    else:
+      self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + ", (" + self.pathSelect[0][0] + ", " + self.pathSelect[0][1] + ") , Depth: " + str(self.pathSelect[1]) + " " + "Angle: " + str(self.angleList[row]) + " " + "</strong></font>to the robot?"
+
+    
+    # temporary change Sep25 by yz
+    insertionPointRAS = self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), self.pathSelect[3])
+    # end tchange    
+
+##    self.sendPathInfo = (hole, array, depth, degree)
+    self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])
+
+    #self.sendPathInfo = "%.3f, %.3f" %(self.pathSelect[1], self.angleList[row])
+    
+    self.sendPathInfoTarget = [self.pathSelect[1], self.angleList[row]]
+    self.templateNum = self.alpha2num(self.pathSelect[0][0], self.pathSelect[0][1])
+  
+    print "self.sendPathInfo: ", self.sendPathInfo  #(('F', ' "0"'), array([  0.,   0.,  30.]), 67.125, 0.886)
+
+
+  def alpha2num(self, x, y):    
+    rowIndex = x
+    colIndex = y
+    
+    row = self.rowDict[rowIndex]
+    col = self.colDict[colIndex]
+    
+    return [row, col]
 
 
   def updateTable(self):
@@ -589,15 +641,14 @@ class HelloRobotWidget():
   def onTemplateConfigButton(self):
     path = self.templateConfigPathEdit.text
     path = qt.QFileDialog.getOpenFileName(None, 'Open Template File', path, '*.csv')
-    if path is not None and path != "":
-      self.templateConfigPathEdit.setText(path)
-      settings = qt.QSettings()
-      settings.setValue('HelloRobot/templateConfigFile', path)
-      # Aug 6, temporary change by ez
-      #self.logic.loadTemplateConfigFile(path)
-      self.logic.loadTemplateConfigFile2(path)
-
-      self.updateTable()
+    self.templateConfigPathEdit.setText(path)
+#    if path is not None and path != "":
+#      self.templateConfigPathEdit.setText(path)
+#      settings = qt.QSettings()
+#      settings.setValue('SmartTemplateModule/templateConfigFile', path)
+  
+    self.logic.loadTemplateConfigFile(path)
+    self.updateTable()
 
 
   def onShowTemplate(self):
@@ -611,6 +662,9 @@ class HelloRobotWidget():
 
 
   def onButtonGeneratePathClicked(self):
+    self.smartTemplatePlane4 = self.logic.determineTemplatePlane()
+    self.smartTemplatePlane3 = [self.smartTemplatePlane4[0], self.smartTemplatePlane4[1], self.smartTemplatePlane4[2]]
+
     self.generateTag = True
 
     intNumOfOptionalPath = int(self.lineEditNumOfOptionalPath.text)
@@ -636,48 +690,28 @@ class HelloRobotWidget():
       cellDegree = qt.QTableWidgetItem("(%.3f)" %self.angleList[i])
 
 
-      posRAS = "(%.3f, %.3f, %.3f)" %(round(self.cellPosTarget[0], 3), round(self.cellPosTarget[1], 3), round(self.cellPosTarget[2], 3))
-      RAS = qt.QTableWidgetItem(posRAS)
+#      posRAS = "(%.3f, %.3f, %.3f)" %(round(self.cellPosTarget[0], 3), round(self.cellPosTarget[1], 3), round(self.cellPosTarget[2], 3))
+#      RAS = qt.QTableWidgetItem(posRAS)
 
-      row = [cellLabel, cellIndex, cellDepth, cellDegree, RAS]
+      row = [cellLabel, cellIndex, cellDepth, cellDegree]
 
 
       self.pathTable.setItem(i, 0, row[0])
       self.pathTable.setItem(i, 1, row[1])
       self.pathTable.setItem(i, 2, row[2])
       self.pathTable.setItem(i, 3, row[3])
-      self.pathTable.setItem(i, 4, row[4])
 
       self.pathTableData.append(row)
 
     self.pathTable.show()
 
 
-  def onPathTableSelected(self, row, column):
-    self.pathSelect = self.holeInfoList[row]
-    print "pathSelect: ", self.pathSelect
-
-    if self.angleList[row] > 15.0:
-      self.rowStr = "Out of range, please choose another needle! :)"
-
-    else:
-      self.rowStr = "Do you want to send target: <font color='red'><strong>F-" + str(self.rowNum) + ", (" + self.pathSelect[0][0] + ", " + self.pathSelect[0][1] + ") , Depth: " + str(self.pathSelect[1]) + " " + "Angle: " + str(self.angleList[row]) + " " + "</strong></font>to the robot?"
-
-
-    insertionPointRAS = self.logic.visualNeedlePath(numpy.array(self.cellPosTarget), self.pathSelect[3])
-
-    #self.sendPathInfo = (hole, array, depth, degree)
-    #self.sendPathInfo = ((self.pathSelect[0][0], self.pathSelect[0][1]), insertionPointRAS, self.pathSelect[1], self.angleList[row])
-    self.sendPathInfo = (self.pathSelect[0][0], self.pathSelect[0][1], self.pathSelect[1], self.angleList[row])
-
-    print "self.sendPathInfo: ", self.sendPathInfo  #(('F', ' "0"'), array([  0.,   0.,  30.]), 67.125, 0.886)
-
-
+ 
 # ----------------------------------------------------------------------------------------------------------------
-# HelloRobotLogic
+# SmartTemplateLogic
 #
-class HelloRobotLogic():
-#class HelloRobotLogic(ScriptedLoadableModuleLogic):
+class SmartTemplateLogic():
+#class SmartTemplateLogic(ScriptedLoadableModuleLogic):
   def __init__(self, parent = None):
   #def __init__(self, parent):
     #ScriptedLoadableModuleLogic.__init__(self, parent)
@@ -698,8 +732,8 @@ class HelloRobotLogic():
     self.generateTag = False
 
 
-  def loadTemplateConfigFile2(self, path):
-    print "loadTemplateConfigFil2"
+  def loadTemplateConfigFile(self, path):
+    print "loadTemplateConfigFile"
     self.templateIndex = []
     self.templateConfig = []
     self.templateInRAS = []
@@ -903,7 +937,7 @@ class HelloRobotLogic():
     print "pos: ", (round(pos[0], 3), round(pos[1], 3), round(pos[2], 3))
 
     # TODO: should randomly choose 3 points on the template (!!! same line situation)
-    template = self.determineTemplatePlane(self.pathOrigins[0], self.pathOrigins[129], self.pathOrigins[200])
+    template = self.determineTemplatePlane()
     print "template: ", template
 
     pPoint = self.projectPoint(pos, template)
@@ -926,8 +960,13 @@ class HelloRobotLogic():
     return (pPoint, depthBase, holeInfoList, angleList)
 
 
-  def determineTemplatePlane(self, point1, point2, point3):
+  def determineTemplatePlane(self):
     print "determineTemplatePlane()"
+
+    point1 = self.pathOrigins[0]
+    point2 = self.pathOrigins[129]
+    point3 = self.pathOrigins[200]
+    
     point1R = point1[0]
     point1A = point1[1]
     point1S = point1[2]
@@ -1176,14 +1215,17 @@ class HelloRobotLogic():
     yellow = slicer.mrmlScene.GetNodeByID("vtkMRMLSliceNodeYellow")
     green = slicer.mrmlScene.GetNodeByID("vtkMRMLSliceNodeGreen")
 
-    vrdLogic = slicer.modules.volumereslicedriver.logic()
-    redDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), red)
-    redMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_INPLANE, red)
-    yellowDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), yellow)
-    yellowMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_INPLANE90, yellow)
-    greenDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), green)
-    greenMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_TRANSVERSE, green)
-    vrdLogic.Modified()
+##   Changed by yz, Sep/25
+##   If 3D Slicer includes the extension "SlicerIGT", uncomment the below code
+
+#    vrdLogic = slicer.modules.volumereslicedriver.logic()
+#    redDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), red)
+#    redMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_INPLANE, red)
+#    yellowDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), yellow)
+#    yellowMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_INPLANE90, yellow)
+#    greenDriver = vrdLogic.SetDriverForSlice(selectNeedleNode.GetID(), green)
+#    greenMode = vrdLogic.SetModeForSlice(vrdLogic.MODE_TRANSVERSE, green)
+#    vrdLogic.Modified()
 
     return pointOnTemplateRAS
 
