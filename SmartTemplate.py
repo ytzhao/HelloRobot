@@ -62,11 +62,6 @@ class SmartTemplateWidget():
     self.logic = SmartTemplateLogic(None)
     self.generateTag = False
 
-    self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9, 'J':10, 'K':11, 'L':12, 'M':13, 'N':14}
-    self.colDict = {' "-7"':-7, ' "-6"':-6, ' "-5"':-5, ' "-4"':-4, ' "-3"':-3, ' "-2"':-2, ' "-1"':-1, ' "0"':0, ' "1"':1, ' "2"':2, ' "3"':3, ' "4"':4, ' "5"':5, ' "6"':6, ' "7"':7}
-
-    #self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9}
-    #self.colDict = {' "0"':1, ' "1"':2, ' "2"':3, ' "3"':4, ' "4"':5, ' "5"':6, ' "6"':7}
 
   def setup(self):
     #
@@ -109,13 +104,25 @@ class SmartTemplateWidget():
     self.lineEditPort.setText("10000")
     self.lineEditPort.setFixedWidth(150)
 
+    #TODO: better to change checkbox to radiobutton
+    oldTemplateLabel = qt.QLabel("Old Template")
+    self.oldTemplateCheckBox = qt.QCheckBox()   
+    self.oldTemplateCheckBox.connect('toggled(bool)', self.onOldTemplateChecked)
+    newTemplateLabel = qt.QLabel("New Template")
+    self.newTemplateCheckBox = qt.QCheckBox()
+    self.newTemplateCheckBox.connect('toggled(bool)', self.onNewTemplateChecked)
+   
+
     gridLayout.addWidget(labelHostname, 1, 0)
     gridLayout.addWidget(self.lineEditHostname, 1, 1)
     gridLayout.addWidget(labelPort, 1, 2)
     gridLayout.addWidget(self.lineEditPort, 1, 3)
-
+    gridLayout.addWidget(oldTemplateLabel, 2, 0)
+    gridLayout.addWidget(self.oldTemplateCheckBox, 2, 1)
+    gridLayout.addWidget(newTemplateLabel, 2, 2)
+    gridLayout.addWidget(self.newTemplateCheckBox, 2, 3)
+    
     configFormLayout.addRow(gridLayout)
-
 
     templateConfigPathLayout = qt.QHBoxLayout()
     templateConfigPathLayout.setSpacing(10)
@@ -310,6 +317,23 @@ class SmartTemplateWidget():
 
     self.pathTable.connect('cellClicked(int, int)', self.onPathTableSelected)
 
+
+  def onOldTemplateChecked(self):
+    if self.newTemplateCheckBox.checked == 1:
+      self.newTemplateCheckBox.checked = 0
+    self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9, 'J':10, 'K':11, 'L':12, 'M':13, 'N':14}
+    self.colDict = {' "-7"':-7, ' "-6"':-6, ' "-5"':-5, ' "-4"':-4, ' "-3"':-3, ' "-2"':-2, ' "-1"':-1, ' "0"':0, ' "1"':1, ' "2"':2, ' "3"':3, ' "4"':4, ' "5"':5, ' "6"':6, ' "7"':7}
+
+    print "onOldTemplateChecked"
+
+
+  def onNewTemplateChecked(self):
+    if self.oldTemplateCheckBox.checked == 1:
+      self.oldTemplateCheckBox.checked = 0
+    self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9}
+    self.colDict = {' "0"':1, ' "1"':2, ' "2"':3, ' "3"':4, ' "4"':5, ' "5"':6, ' "6"':7}
+
+    print "onNewTemplateChecked"
 
   def onButtonRestartClicked(self):
     slicer.app.restart()
