@@ -105,10 +105,10 @@ class SmartTemplateWidget():
     self.lineEditPort.setFixedWidth(150)
 
     #TODO: better to change checkbox to radiobutton
-    oldTemplateLabel = qt.QLabel("Old Template")
+    oldTemplateLabel = qt.QLabel("14*7 Old template")
     self.oldTemplateCheckBox = qt.QCheckBox()   
     self.oldTemplateCheckBox.connect('toggled(bool)', self.onOldTemplateChecked)
-    newTemplateLabel = qt.QLabel("New Template")
+    newTemplateLabel = qt.QLabel("9*7 New template")
     self.newTemplateCheckBox = qt.QCheckBox()
     self.newTemplateCheckBox.connect('toggled(bool)', self.onNewTemplateChecked)
    
