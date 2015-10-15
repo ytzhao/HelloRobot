@@ -331,7 +331,7 @@ class SmartTemplateWidget():
     if self.oldTemplateCheckBox.checked == 1:
       self.oldTemplateCheckBox.checked = 0
     self.rowDict = {'A':1, 'B':2, 'C':3, 'D':4, 'E':5, 'F':6, 'G':7, 'H':8, 'I':9}
-    self.colDict = {' "0"':1, ' "1"':2, ' "2"':3, ' "3"':4, ' "4"':5, ' "5"':6, ' "6"':7}
+    self.colDict = {' "-3"':1, ' "-2"':2, ' "-1"':3, ' "0"':4, ' "1"':5, ' "2"':6, ' "3"':7}
 
     print "onNewTemplateChecked"
 
